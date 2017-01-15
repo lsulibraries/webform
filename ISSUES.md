@@ -15,11 +15,11 @@ because Drupal's YAML utility is not a service.](https://www.drupal.org/node/192
 > The Webform module provides drush commands to 'tidy' exported YAML and
 > configuration files that so they are easier to read and edit.
 
-### Webform Elements
+### Form Elements
     
 **[Drupal core webforms system issues](https://www.drupal.org/project/issues/drupal?status=Open&version=8.x&component=forms+system)**
   
-> Any changes, improvements, and bug fixes for Drupal's Webform API may directly
+> Any changes, improvements, and bug fixes for Drupal's Form API may directly
 > impact the Webform module.
   
 - [Issue #1593964: Allow FAPI usage of the datalist element](https://www.drupal.org/node/1593964)

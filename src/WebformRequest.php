@@ -43,20 +43,22 @@ class WebformRequest implements WebformRequestInterface {
   protected $request;
 
   /**
-   * Constructs a WebformSubmissionExporter object.
+   * Constructs a WebformRequest object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeRepositoryInterface $entity_type_repository
-   *   The entity type repository.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type repository.
+   * @param \Drupal\Core\Entity\EntityTypeRepositoryInterface $entity_type_repository
+   *   The entity type repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeRepositoryInterface $entity_type_repository, RequestStack $request_stack, RouteMatchInterface $route_match) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeRepository = $entity_type_repository;
+  public function __construct(RequestStack $request_stack, RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, EntityTypeRepositoryInterface $entity_type_repository) {
     $this->request = $request_stack->getCurrentRequest();
     $this->routeMatch = $route_match;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->entityTypeRepository = $entity_type_repository;
   }
 
   /**
@@ -91,8 +93,9 @@ class WebformRequest implements WebformRequestInterface {
    */
   public function getCurrentWebform() {
     $source_entity = self::getCurrentSourceEntity('webform');
-    if ($source_entity && method_exists($source_entity, 'hasField') && $source_entity->hasField('webform')) {
-      return $source_entity->webform->entity;
+    $webform_field_name = self::getSourceEntityWebformFieldName($source_entity);
+    if ($source_entity && $webform_field_name && $source_entity->hasField($webform_field_name)) {
+      return $source_entity->$webform_field_name->entity;
     }
     else {
       return $this->routeMatch->getParameter('webform');
@@ -190,16 +193,35 @@ class WebformRequest implements WebformRequestInterface {
       throw new \InvalidArgumentException('Webform entity');
     }
 
+    $webform_field_name = self::getSourceEntityWebformFieldName($source_entity);
     if ($source_entity
-      && method_exists($source_entity, 'hasField')
-      && $source_entity->hasField('webform')
-      && $source_entity->webform->target_id == $webform->id()
+      && $webform_field_name
+      && $source_entity->hasField($webform_field_name)
+      && $source_entity->$webform_field_name->target_id == $webform->id()
     ) {
       return TRUE;
     }
     else {
       return FALSE;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSourceEntityWebformFieldName(EntityInterface $source_entity = NULL) {
+    if ($source_entity === NULL || !method_exists($source_entity, 'hasField')) {
+      return '';
+    }
+    if ($source_entity instanceof ContentEntityInterface) {
+      $fields = $source_entity->getFieldDefinitions();
+      foreach ($fields as $field_name => $field_definition) {
+        if ($field_definition->getType() == 'webform') {
+          return $field_name;
+        }
+      }
+    }
+    return '';
   }
 
   /**
@@ -254,27 +276,6 @@ class WebformRequest implements WebformRequestInterface {
     }
 
     return $source_entity;
-  }
-
-  /**
-   * Get the source entity's webform field name.
-   *
-   * @param EntityInterface $source_entity
-   *   A webform submission's source entity.
-   *
-   * @return string
-   *   The name of the webform field, or an empty string.
-   */
-  protected function getSourceEntityWebformFieldName(EntityInterface $source_entity) {
-    if ($source_entity instanceof ContentEntityInterface) {
-      $fields = $source_entity->getFieldDefinitions();
-      foreach ($fields as $field_name => $field_definition) {
-        if ($field_definition->getType() == 'webform') {
-          return $field_name;
-        }
-      }
-    }
-    return '';
   }
 
 }

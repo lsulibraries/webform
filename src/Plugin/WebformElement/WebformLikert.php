@@ -16,6 +16,7 @@ use Drupal\webform\WebformInterface;
  * @WebformElement(
  *   id = "webform_likert",
  *   label = @Translation("Likert"),
+ *   description = @Translation("Provides a form element where users can respond to multiple questions using a <a href=""https://en.wikipedia.org/wiki/Likert_scale"">Likert</a> scale."),
  *   category = @Translation("Options elements"),
  *   multiline = TRUE,
  *   composite = TRUE,
@@ -307,11 +308,11 @@ class WebformLikert extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getTestValue(array $element, WebformInterface $webform) {
+  public function getTestValues(array $element, WebformInterface $webform, array $options = []) {
     $value = [];
     foreach ($element['#questions'] as $key => $question) {
       $keys = array_keys($element['#answers']);
-      $value[$key] = $keys[array_rand($keys)];
+      $value[$key] = ($options['random']) ? $keys[array_rand($keys)] : reset($keys);
     }
     return [$value];
   }

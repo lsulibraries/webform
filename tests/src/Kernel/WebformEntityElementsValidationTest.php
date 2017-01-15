@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\webform\Tests;
+namespace Drupal\Tests\webform\Kernel;
 
 use Drupal\Core\Url;
 use Drupal\webform\WebformEntityElementsValidator;
@@ -9,9 +9,9 @@ use Drupal\KernelTests\KernelTestBase;
 /**
  * Tests webform entity elements validation.
  *
- * @group Webform
+ * @group webform
  */
-class WebformEntityElementsValidationUnitTest extends KernelTestBase {
+class WebformEntityElementsValidationTest extends KernelTestBase {
 
   /**
    * Modules to enable.

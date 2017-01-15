@@ -15,6 +15,7 @@ use Drupal\webform\WebformSubmissionInterface;
  * @WebformElement(
  *   id = "webform_location",
  *   label = @Translation("Location"),
+ *   description = @Translation("Provides a form element to collect valid location information (address, longitude, latitude, geolocation) using Google's location auto completion API."),
  *   category = @Translation("Composite elements"),
  *   multiline = TRUE,
  *   composite = TRUE,
@@ -191,9 +192,10 @@ class WebformLocation extends WebformCompositeBase {
   /**
    * {@inheritdoc}
    */
-  public function getTestValue(array $element, WebformInterface $webform) {
-    // Use test values include in settings.
-    return '';
+  public function getTestValues(array $element, WebformInterface $webform, array $options = []) {
+    // Use test values included in settings and not from
+    // WebformCompositeBase::getTestValues.
+    return FALSE;
   }
 
 }

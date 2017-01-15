@@ -288,6 +288,7 @@ class WebformSubmissionForm extends ContentEntityForm {
 
     // Details toggle: Display collapse/expand all details link.
     if ($this->getWebformSetting('form_details_toggle')) {
+      $form['#attributes']['class'][] = 'js-webform-details-toggle';
       $form['#attributes']['class'][] = 'webform-details-toggle';
       $form['#attached']['library'][] = 'webform/webform.element.details.toggle';
     }
@@ -774,7 +775,7 @@ class WebformSubmissionForm extends ContentEntityForm {
     // Get elements values from webform submission.
     $values = array_intersect_key(
       $form_state->getValues(),
-      $webform->getElementsFlattenedAndHasValue()
+      $webform->getElementsInitializedFlattenedAndHasValue()
     );
 
     // Serialize the values as YAML and merge existing data.

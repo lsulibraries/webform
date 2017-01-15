@@ -11,6 +11,7 @@ use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\Core\Link;
 use Drupal\file\Entity\File;
 use Drupal\file\Element\ManagedFile as ManagedFileElement;
+use Drupal\file\FileInterface;
 use Drupal\webform\Entity\WebformSubmission;
 use Drupal\webform\WebformElementBase;
 use Drupal\Component\Utility\Bytes;
@@ -65,7 +66,7 @@ abstract class WebformManagedFileBase extends WebformElementBase {
       return FALSE;
     }
 
-    // Disable managed file element is there are no visible stream wrappers.
+    // Disable File element is there are no visible stream wrappers.
     $scheme_options = self::getVisibleStreamWrappers();
     return (empty($scheme_options)) ? FALSE : TRUE;
   }
@@ -83,11 +84,11 @@ abstract class WebformManagedFileBase extends WebformElementBase {
       $scheme_options = self::getVisibleStreamWrappers();
       $uri_scheme = $this->getUriScheme($element);
       if (!isset($scheme_options[$uri_scheme]) && $this->currentUser->hasPermission('administer webform')) {
-        drupal_set_message($this->t('The \'Managed file\' element is unavailable because a <a href="https://www.drupal.org/documentation/modules/file">private files directory</a> has not been configured and public file uploads have not been enabled. For more information see: <a href="https://www.drupal.org/psa-2016-003">DRUPAL-PSA-2016-003</a>'), 'warning');
+        drupal_set_message($this->t('The \'File\' element is unavailable because a <a href="https://www.drupal.org/documentation/modules/file">private files directory</a> has not been configured and public file uploads have not been enabled. For more information see: <a href="https://www.drupal.org/psa-2016-003">DRUPAL-PSA-2016-003</a>'), 'warning');
         $context = [
           'link' => Link::fromTextAndUrl($this->t('Edit'), \Drupal\Core\Url::fromRoute('<current>'))->toString(),
         ];
-        $this->logger->notice("The 'Managed file' element is unavailable because no stream wrappers are available", $context);
+        $this->logger->notice("The 'File' element is unavailable because no stream wrappers are available", $context);
       }
     }
   }
@@ -96,6 +97,15 @@ abstract class WebformManagedFileBase extends WebformElementBase {
    * {@inheritdoc}
    */
   public function prepare(array &$element, WebformSubmissionInterface $webform_submission) {
+    // Track if this element has been processed because the work-around below
+    // for 'Issue #2705471: Webform states File fields' which nests  the
+    // 'managed_file' element in a basic container, which triggers this element
+    // to processed a second time.
+    if (!empty($element['#webform_managed_file_processed'])) {
+      return;
+    }
+    $element['#webform_managed_file_processed'] = TRUE;
+
     parent::prepare($element, $webform_submission);
 
     // Check if the URI scheme exists and can be used the upload location.
@@ -125,27 +135,18 @@ abstract class WebformManagedFileBase extends WebformElementBase {
       '#prefix' => '<div class="description">',
       '#suffix' => '</div>',
     ];
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function prepareWrapper(array &$element) {
-    parent::prepareWrapper($element);
-
-    // Issue #2705471: Webform states managed file fields.
+    // Issue #2705471: Webform states File fields.
     // Workaround: Wrap the 'managed_file' element in a basic container.
-    if (!empty($element['#fixed_wrapper']) || empty($element['#prefix'])) {
-      return;
+    if (!empty($element['#prefix'])) {
+      $container = [
+        '#prefix' => $element['#prefix'],
+        '#suffix' => $element['#suffix'],
+      ];
+      unset($element['#prefix'], $element['#suffix']);
+      $container[$element['#webform_key']] = $element + ['#webform_managed_file_processed' => TRUE];
+      $element = $container;
     }
-
-    $container = [
-      '#prefix' => $element['#prefix'],
-      '#suffix' => $element['#suffix'],
-    ];
-    unset($element['#prefix'], $element['#suffix']);
-    $container[$element['#webform_key']] = $element + ['#fixed_wrapper' => TRUE];
-    $element = $container;
   }
 
   /**
@@ -165,7 +166,15 @@ abstract class WebformManagedFileBase extends WebformElementBase {
       return '';
     }
 
-    $items = $this->formatItems($element, $value, $options);
+    $format = $this->getFormat($element);
+
+    $fids = (is_array($value)) ? $value : [$value];
+    $files = File::loadMultiple($fids);
+
+    $items = [];
+    foreach ($files as $fid => $file) {
+      $items[$fid] = $this->formatHtmlItem($element, $value, $options, $file, $format);
+    }
     if (empty($items)) {
       return '';
     }
@@ -193,7 +202,15 @@ abstract class WebformManagedFileBase extends WebformElementBase {
       $element['#format'] = 'url';
     }
 
-    $items = $this->formatItems($element, $value, $options);
+    $format = $this->getFormat($element);
+
+    $fids = (is_array($value)) ? $value : [$value];
+    $files = File::loadMultiple($fids);
+
+    $items = [];
+    foreach ($files as $fid => $file) {
+      $items[$fid] = $this->formatTextItem($element, $value, $options, $file, $format);
+    }
     if (empty($items)) {
       return '';
     }
@@ -209,7 +226,7 @@ abstract class WebformManagedFileBase extends WebformElementBase {
   }
 
   /**
-   * Format a managed files as array of strings.
+   * Format element file as HTML.
    *
    * @param array $element
    *   An element.
@@ -217,52 +234,73 @@ abstract class WebformManagedFileBase extends WebformElementBase {
    *   A value.
    * @param array $options
    *   An array of options.
+   * @param \Drupal\file\FileInterface $file
+   *   A file
+   * @param string $format
+   *   A format
    *
-   * @return array
-   *   Managed files as array of strings.
+   * @return array|string
+   *   The element's value as formatted HTML.
    */
-  protected function formatItems(array &$element, $value, array $options) {
-    $fids = (is_array($value)) ? $value : [$value];
+  protected function formatHtmlItem(array &$element, $value, array $options, FileInterface $file, $format) {
+    switch ($format) {
+      case 'id':
+      case 'url':
+      case 'value':
+      case 'raw':
+        return $this->formatTextItem($element, $value, $options, $file, $format);
 
-    $files = File::loadMultiple($fids);
-    $format = $this->getFormat($element);
-    $items = [];
-    foreach ($files as $fid => $file) {
-      switch ($format) {
-        case 'link':
-          $items[$fid] = [
-            '#theme' => 'file_link',
-            '#file' => $file,
-          ];
-          break;
+      case 'link':
+        return [
+          '#theme' => 'file_link',
+          '#file' => $file,
+        ];
 
-        case 'id':
-          $items[$fid] = $file->id();
-          break;
-
-        case 'url':
-        case 'value':
-        case 'raw':
-          $items[$fid] = file_create_url($file->getFileUri());
-          break;
-
-        default:
-          $theme = str_replace('webform_', 'webform_element_', $this->getPluginId());
-          if (strpos($theme, 'webform_') !== 0) {
-            $theme = 'webform_element_' . $theme;
-          }
-          $items[$fid] = [
-            '#theme' => $theme,
-            '#element' => $element,
-            '#value' => $value,
-            '#options' => $options,
-            '#file' => $file,
-          ];
-          break;
-      }
+      default:
+        $theme = str_replace('webform_', 'webform_element_', $this->getPluginId());
+        if (strpos($theme, 'webform_') !== 0) {
+          $theme = 'webform_element_' . $theme;
+        }
+        return [
+          '#theme' => $theme,
+          '#element' => $element,
+          '#value' => $value,
+          '#options' => $options,
+          '#file' => $file,
+        ];
     }
-    return $items;
   }
+
+  /**
+   * Format element file as plain text.
+   *
+   * @param array $element
+   *   An element.
+   * @param array|mixed $value
+   *   A value.
+   * @param array $options
+   *   An array of options.
+   * @param \Drupal\file\FileInterface $file
+   *   A file
+   * @param string $format
+   *   A format
+   *
+   * @return array|string
+   *   The element's value as plain text.
+   */
+  protected function formatTextItem(array &$element, $value, array $options, FileInterface $file, $format) {
+    switch ($format) {
+      case 'id':
+        return $file->id();
+
+      case 'url':
+      case 'value':
+      case 'raw':
+      default:
+        return file_create_url($file->getFileUri());
+    }
+  }
+
 
   /**
    * {@inheritdoc}
@@ -356,7 +394,7 @@ abstract class WebformManagedFileBase extends WebformElementBase {
     $value = isset($data[$key]) ? $data[$key] : [];
     $fids = (is_array($value)) ? $value : [$value];
 
-    // Delete managed file record.
+    // Delete File record.
     foreach ($fids as $fid) {
       file_delete($fid);
     }
@@ -371,8 +409,8 @@ abstract class WebformManagedFileBase extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getTestValue(array $element, WebformInterface $webform) {
-    if ($this->isDisabled()) {
+  public function getTestValues(array $element, WebformInterface $webform, array $options = []) {
+    if ($this->isDisabled() || !isset($element['#webform_key'])) {
       return NULL;
     }
 
@@ -407,7 +445,7 @@ abstract class WebformManagedFileBase extends WebformElementBase {
     $file->save();
 
     $fid = $file->id();
-    return ($this->hasMultipleValues($element)) ? [$fid] : $fid;
+    return [$fid];
   }
 
   /**
@@ -617,6 +655,7 @@ abstract class WebformManagedFileBase extends WebformElementBase {
       return NULL;
     }
 
+    /** @var \Drupal\file\FileInterface $file */
     $file = reset($files);
     if (empty($file)) {
       return NULL;

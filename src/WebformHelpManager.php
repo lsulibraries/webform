@@ -76,6 +76,13 @@ class WebformHelpManager implements WebformHelpManagerInterface {
   protected $librariesManager;
 
   /**
+   * Webform element manager.
+   *
+   * @var \Drupal\webform\WebformElementManagerInterface
+   */
+  protected $elementManager;
+
+  /**
    * Constructs a WebformHelpManager object.
    *
    * @param \Drupal\Core\Session\AccountInterface $current_user
@@ -90,14 +97,17 @@ class WebformHelpManager implements WebformHelpManagerInterface {
    *   The Webform add-ons manager.
    * @param \Drupal\webform\WebformLibrariesManagerInterface $libraries_manager
    *   The Webform libraries manager.
+   * @param \Drupal\webform\WebformElementManagerInterface $element_manager
+   *   The webform element manager.
    */
-  public function __construct(AccountInterface $current_user, ModuleHandlerInterface $module_handler, StateInterface $state, PathMatcherInterface $path_matcher, WebformAddOnsManagerInterface $addons_manager, WebformLibrariesManagerInterface $libraries_manager) {
+  public function __construct(AccountInterface $current_user, ModuleHandlerInterface $module_handler, StateInterface $state, PathMatcherInterface $path_matcher, WebformAddOnsManagerInterface $addons_manager, WebformLibrariesManagerInterface $libraries_manager, WebformElementManagerInterface $element_manager) {
     $this->currentUser = $current_user;
     $this->moduleHandler = $module_handler;
     $this->state = $state;
     $this->pathMatcher = $path_matcher;
     $this->addOnsManager = $addons_manager;
     $this->librariesManager = $libraries_manager;
+    $this->elementManager = $element_manager;
 
     $this->help = $this->initHelp();
     $this->videos = $this->initVideos();
@@ -199,6 +209,7 @@ class WebformHelpManager implements WebformHelpManagerInterface {
       $build['videos'] = $this->buildVideos();
     }
     $build['uses'] = $this->buildUses();
+    $build['elements'] = $this->buildElements();
     $build['addons'] = $this->buildAddOns();
     $build['libraries'] = $this->buildLibraries();
     $build['#attached']['library'][] = 'webform/webform.help';
@@ -228,6 +239,75 @@ class WebformHelpManager implements WebformHelpManagerInterface {
         '#suffix' => '</div>',
       ],
     ];
+  }
+
+  /**
+   * Build the eleents section.
+   *
+   * @return array
+   *   An render array containing the elements section.
+   */
+  protected function buildElements() {
+    $build = [
+      'title' => [
+        '#markup' => $this->t('Form elements'),
+        '#prefix' => '<h3 id="elements">',
+        '#suffix' => '</h3>',
+      ],
+      'content' => [
+        '#markup' => $this->t('Below is a list of all available form and render elements.'),
+        '#prefix' => '<div>',
+        '#suffix' => '</div>',
+      ],
+    ];
+
+    $definitions = $this->elementManager->getDefinitions();
+    $definitions = $this->elementManager->getSortedDefinitions($definitions, 'category');
+    $grouped_definitions = $this->elementManager->getGroupedDefinitions($definitions);
+    foreach ($grouped_definitions as $category_name => $elements) {
+      $build['content'][$category_name]['title'] = [
+        '#markup' => $category_name,
+        '#prefix' => '<h2>',
+        '#suffix' => '</h2>',
+      ];
+      $build['content'][$category_name]['elements'] = [
+        '#prefix' => '<dl>',
+        '#suffix' => '</dl>',
+      ];
+      foreach ($elements as $element_name => $element) {
+        /** @var \Drupal\webform\WebformElementInterface $webform_element */
+        $webform_element = $this->elementManager->createInstance($element_name);
+
+        if ($webform_element->isHidden()) {
+          continue;
+        }
+
+
+        if ($api_url = $webform_element->getPluginApiUrl()) {
+          $build['content'][$category_name]['elements'][$element_name]['title'] = [
+            '#type' => 'link',
+            '#title' => $element['label'],
+            '#url' => $api_url,
+          ];
+        }
+        else {
+          $build['content'][$category_name]['elements'][$element_name]['title'] = [
+            '#markup' => $element['label'],
+          ];
+        }
+        $build['content'][$category_name]['elements'][$element_name]['title'] += [
+          '#prefix' => '<dt>',
+          '#suffix' => '</dt>',
+        ];
+
+        $build['content'][$category_name]['elements'][$element_name]['description'] = [
+          '#markup' => $element['description'],
+          '#prefix' => '<dd>',
+          '#suffix' => '</dd>',
+        ];
+      }
+    }
+    return $build;
   }
 
   /**
@@ -338,6 +418,7 @@ class WebformHelpManager implements WebformHelpManagerInterface {
         '#suffix' => '</h3>',
       ],
       'content' => [
+        '#markup' => $this->t("Below is a list of modules and projects that extend and/or provide additional functionality to the Webform module and Drupal\'s Form API."),
         '#prefix' => '<div>',
         '#suffix' => '</div>',
       ],
@@ -694,7 +775,7 @@ class WebformHelpManager implements WebformHelpManagerInterface {
       ],
       'title' => $this->t('Extend the Webform module'),
       'url' => Url::fromRoute('webform.addons'),
-      'content' => $this->t('The Add-ons page includes a list of modules and projects that extend and/or provide additional functionality to the Webform module and Drupal\'s Webform API.  If you would like a module or project to be included in the below list, please submit a request to the <a href=":href">Webform module\'s issue queue</a>.', [':href' => 'https://www.drupal.org/node/add/project-issue/webform']),
+      'content' => $this->t('The Add-ons page includes a list of modules and projects that extend and/or provide additional functionality to the Webform module and Drupal\'s Form API.  If you would like a module or project to be included in the below list, please submit a request to the <a href=":href">Webform module\'s issue queue</a>.', [':href' => 'https://www.drupal.org/node/add/project-issue/webform']),
     ];
 
 

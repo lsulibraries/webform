@@ -84,7 +84,7 @@ class WebformElementBase extends PluginBase implements WebformElementInterface {
   protected $tokenManager;
 
   /**
-   * Constructs a Drupal\Component\Plugin\PluginBase object.
+   * Constructs a WebformElementBast object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -237,6 +237,13 @@ class WebformElementBase extends PluginBase implements WebformElementInterface {
    */
   public function getPluginLabel() {
     return $this->pluginDefinition['label'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluginDescription() {
+    return $this->pluginDefinition['description'];
   }
 
   /**
@@ -431,9 +438,9 @@ class WebformElementBase extends PluginBase implements WebformElementInterface {
     // Add tooltip description display support.
     if (isset($element['#description_display']) && $element['#description_display'] === 'tooltip') {
       $element['#description_display'] = 'invisible';
-      $element[$attributes_property]['class'][] = 'js-webform-element-tooltip';
-      $element[$attributes_property]['class'][] = 'webform-element-tooltip';
-      $element['#attached']['library'][] = 'webform/webform.element.tooltip';
+      $element[$attributes_property]['class'][] = 'js-webform-tooltip-element';
+      $element[$attributes_property]['class'][] = 'webform-tooltip-element';
+      $element['#attached']['library'][] = 'webform/webform.tooltip';
     }
 
     // Add .webform-has-field-prefix and .webform-has-field-suffix class.
@@ -651,8 +658,8 @@ class WebformElementBase extends PluginBase implements WebformElementInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTestValue(array $element, WebformInterface $webform) {
-    return '';
+  public function getTestValues(array $element, WebformInterface $webform, array $options = []) {
+    return FALSE;
   }
 
   /**
@@ -1056,7 +1063,6 @@ class WebformElementBase extends PluginBase implements WebformElementInterface {
     $form['wrapper_attributes'] = [
       '#type' => 'details',
       '#title' => $this->t('Wrapper attributes'),
-      '#open' => TRUE,
     ];
     $form['wrapper_attributes']['wrapper_attributes'] = [
       '#type' => 'webform_element_attributes',

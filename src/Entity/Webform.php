@@ -11,6 +11,8 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
+use Drupal\webform\Plugin\WebformElement\Details;
+use Drupal\webform\Plugin\WebformElement\WebformManagedFileBase;
 use Drupal\webform\Utility\WebformElementHelper;
 use Drupal\webform\WebformHandlerInterface;
 use Drupal\webform\WebformHandlerPluginCollection;
@@ -221,11 +223,11 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   protected $elementsInitializedAndFlattened;
 
   /**
-   * The webform elements flattened and has value.
+   * The webform elements initialized, flattened, and has value.
    *
    * @var array
    */
-  protected $elementsFlattenedAndHasValue;
+  protected $elementsInitializedFlattenedAndHasValue;
 
   /**
    * The webform elements translations.
@@ -735,9 +737,9 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   /**
    * {@inheritdoc}
    */
-  public function getElementsFlattenedAndHasValue() {
+  public function getElementsInitializedFlattenedAndHasValue() {
     $this->initElements();
-    return $this->elementsFlattenedAndHasValue;
+    return $this->elementsInitializedFlattenedAndHasValue;
   }
 
   /**
@@ -773,9 +775,11 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       return;
     }
 
+    $this->hasManagedFile = FALSE;
+    $this->hasFlexboxLayout = FALSE;
     $this->elementsDecodedAndFlattened = [];
     $this->elementsInitializedAndFlattened = [];
-    $this->elementsFlattenedAndHasValue = [];
+    $this->elementsInitializedFlattenedAndHasValue = [];
     $this->elementsTranslations = [];
     try {
       /** @var \Drupal\webform\WebformTranslationManagerInterface $translation_manager */
@@ -821,11 +825,13 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
    * Reset parsed and cached webform elements.
    */
   protected function resetElements() {
+    $this->hasManagedFile = NULL;
+    $this->hasFlexboxLayout = NULL;
     $this->elementsDecoded = NULL;
     $this->elementsInitialized = NULL;
     $this->elementsDecodedAndFlattened = NULL;
     $this->elementsInitializedAndFlattened = NULL;
-    $this->elementsFlattenedAndHasValue = NULL;
+    $this->elementsInitializedFlattenedAndHasValue = NULL;
     $this->elementsTranslations = NULL;
   }
 
@@ -890,8 +896,14 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
 
       $element_handler = NULL;
       if (isset($element['#type'])) {
+        // Load the element's handler.
+        $element_handler = $element_manager->getElementInstance($element);
+
+        // Initialize the element.
+        $element_handler->initialize($element);
+
         // Track managed file upload.
-        if ($element['#type'] == 'managed_file') {
+        if ($element_handler instanceof WebformManagedFileBase) {
           $this->hasManagedFile = TRUE;
         }
 
@@ -906,12 +918,6 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
           $element['#type'] = 'webform_' . $element['#type'];
         }
 
-        // Load the element's handler.
-        $element_handler = $element_manager->createInstance($element['#type']);
-
-        // Initialize the element.
-        $element_handler->initialize($element);
-
         $element['#webform_multiple'] = $element_handler->hasMultipleValues($element);
         $element['#webform_composite'] = $element_handler->isComposite();
       }
@@ -922,7 +928,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       // Check if element has value (aka can be exported) and add it to
       // flattened has value array.
       if ($element_handler && $element_handler->isInput($element)) {
-        $this->elementsFlattenedAndHasValue[$key] =& $this->elementsInitializedAndFlattened[$key];
+        $this->elementsInitializedFlattenedAndHasValue[$key] =& $this->elementsInitializedAndFlattened[$key];
       }
 
       $this->initElementsRecursive($element, $key, $depth + 1);

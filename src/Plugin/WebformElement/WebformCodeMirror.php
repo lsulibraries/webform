@@ -12,6 +12,7 @@ use Drupal\webform\WebformInterface;
  * @WebformElement(
  *   id = "webform_codemirror",
  *   label = @Translation("CodeMirror"),
+ *   description = @Translation("Provides a form element for editing code in a number of programming languages and markup."),
  *   category = @Translation("Advanced elements"),
  *   multiline = TRUE,
  * )
@@ -69,19 +70,19 @@ class WebformCodeMirror extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getTestValue(array $element, WebformInterface $webform) {
+  public function getTestValues(array $element, WebformInterface $webform, array $options = []) {
     switch ($element['#mode']) {
       case 'html':
-        return '<p><b>Hello World!!!</b></p>';
+        return ['<p><b>Hello World!!!</b></p>'];
 
       case 'yaml':
-        return "message: 'Hello World'";
+        return ["message: 'Hello World'"];
 
       case 'text':
-        return "Hello World";
+        return ["Hello World"];
 
       default:
-        return '';
+        return [];
 
     }
 
