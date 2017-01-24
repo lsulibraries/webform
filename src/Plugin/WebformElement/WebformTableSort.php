@@ -12,7 +12,6 @@ use Drupal\webform\WebformInterface;
  *   label = @Translation("Table sort"),
  *   description = @Translation("Provides a form element for a table of values that can be sorted."),
  *   category = @Translation("Options elements"),
- *   multiple = TRUE,
  *   states_wrapper = TRUE,
  * )
  */
@@ -37,6 +36,13 @@ class WebformTableSort extends OptionsBase {
   /**
    * {@inheritdoc}
    */
+  public function supportsMultipleValues() {
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function hasMultipleValues(array $element) {
     return TRUE;
   }
@@ -44,7 +50,7 @@ class WebformTableSort extends OptionsBase {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultFormat() {
+  public function getItemDefaultFormat() {
     return 'ol';
   }
 

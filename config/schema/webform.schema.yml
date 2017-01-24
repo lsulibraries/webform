@@ -14,6 +14,9 @@ webform.settings:
         default_form_submit_label:
           type: label
           label: 'Default webform submit text'
+        default_form_submit_once:
+          type: boolean
+          label: 'Prevent duplicate submissions'
         default_form_closed_message:
           type: text
           label: 'Default webform closed message'
@@ -178,6 +181,9 @@ webform.settings:
         delimiter:
           type: string
           label: 'Delimiter text format'
+        multiple_delimiter:
+          type: string
+          label: 'Element multiple values delimiter'
         excel:
           type: boolean
           label: 'Open HTML table in Excel'
@@ -227,6 +233,13 @@ webform.settings:
         default_batch_delete_size:
           type: integer
           label: 'Batch delete size'
+    purge_settings:
+      type: mapping
+      label: 'Automated purging settings'
+      mapping:
+        cron_size:
+          type: integer
+          label: 'Amount of submissions to process'
     test:
       type: mapping
       label: 'Test settings'
@@ -313,6 +326,9 @@ webform.webform.*:
         form_submit_label:
           type: label
           label: 'Webform submit text'
+        form_submit_once:
+          type: boolean
+          label: 'Prevent duplicate submissions'
         form_submit_attributes:
           type: ignore
           label: 'Webform submit attributes'
@@ -322,6 +338,9 @@ webform.webform.*:
         form_exception_message:
           type: text
           label: 'Webform exception message'
+        form_previous_submissions:
+          type: boolean
+          label: 'Webform previous submissions notification'
         form_confidential:
           type: boolean
           label: 'Webform confidential'
@@ -451,6 +470,12 @@ webform.webform.*:
         limit_user_message:
           type: text
           label: 'Limit user message'
+        purge:
+          type: string
+          label: 'Default purging'
+        purge_days:
+          type: integer
+          label: 'Default days to retain submissions'
         entity_limit_total:
           type: integer
           label: 'Entity limit total submissions'

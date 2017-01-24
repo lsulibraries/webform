@@ -6,27 +6,53 @@ dependencies:
       - webform_test
 uid: null
 template: false
-id: test_element_unique
-title: 'Test: Element: Unique'
-description: 'Test #unique element value support.'
+id: test_results
+title: 'Test: Results'
+description: 'Test webform submission results.'
 elements: |
-  textfield:
-    '#type': 'textfield'
-    '#title': 'textfield'
-    '#description': '#unique property is validated by single value elements'
-    '#unique': true
-    '#default_value': 'value'
-  checkboxes:
+  first_name:
+    '#type': textfield
+    '#title': 'First name'
+  last_name:
+    '#type': textfield
+    '#title': 'Last name'
+  sex:
+    '#type': select
+    '#title': Sex
+    '#options': gender
+  dob:
+    '#type': date
+    '#title': 'Date of birth'
+    '#format': 'l, F j, Y'
+  node:
+    '#type': entity_autocomplete
+    '#title': 'Favorite node'
+    '#target_type': node
+    '#selection_handler': 'default:node'
+    '#selection_settings':
+      target_bundles:
+        page: page
+  colors:
     '#type': checkboxes
-    '#title': 'checkboxes'
-    '#description': '#unique property is ignored by multiple value elements'
-    '#unique': true
+    '#title': 'Flag colors'
     '#options':
-      1: one
-      2: two
-    '#default_value':
-      - 1
-      - 2
+      red: Red
+      white: White
+      blue: Blue
+  likert:
+    '#type': likert
+    '#title': Likert
+    '#questions':
+      q1: 'Question 1'
+      q2: 'Question 2'
+      q3: 'Question 3'
+    '#answers':
+      1: 'Answer 1'
+      2: 'Answer 2'
+      3: 'Answer 3'
+  address:
+    '#type': webform_address
+    '#title': Address
 css: ''
 javascript: ''
 settings:
@@ -34,9 +60,11 @@ settings:
   page_submit_path: ''
   page_confirm_path: ''
   form_submit_label: ''
+  form_submit_once: false
   form_submit_attributes: {  }
   form_exception_message: ''
   form_closed_message: ''
+  form_previous_submissions: true
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false
@@ -79,6 +107,8 @@ settings:
   limit_total_message: ''
   limit_user: null
   limit_user_message: ''
+  purge: none
+  purge_days: null
   entity_limit_total: null
   entity_limit_user: null
   results_disabled: false

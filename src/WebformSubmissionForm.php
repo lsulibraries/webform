@@ -150,6 +150,17 @@ class WebformSubmissionForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
+  protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
+    parent::copyFormValuesToEntity($entity, $form, $form_state);
+    // Set current page.
+    if ($current_page = $this->getCurrentPage($form, $form_state)) {
+      $entity->setCurrentPage($current_page);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     /* @var $webform_submission \Drupal\webform\WebformSubmissionInterface */
     $webform_submission = $this->getEntity();
@@ -279,6 +290,12 @@ class WebformSubmissionForm extends ContentEntityForm {
       if ($current_page && ($current_page != $this->getFirstPage($form, $form_state))) {
         $form['#attributes']['data-webform-unsaved'] = TRUE;
       }
+    }
+
+    // Submit once: Prevent duplicate submissions.
+    if ($this->getWebformSetting('form_submit_once')) {
+      $form['#attributes']['class'][] = 'js-webform-submit-once';
+      $form['#attached']['library'][] = 'webform/webform.form.submit_once';
     }
 
     // Novalidate: Add novalidate attribute to webform if client side validation disabled.
@@ -451,6 +468,7 @@ class WebformSubmissionForm extends ContentEntityForm {
     // Display link to previous submissions message when user is adding a new
     // submission.
     if ($this->isGet()
+      && $this->getWebformSetting('form_previous_submissions', FALSE)
       && ($this->isRoute('entity.webform.canonical') || $this->isWebformEntityReferenceFromSourceEntity())
       && $webform->access('submission_view_own')
       && ($previous_total = $this->storage->getTotal($webform, $this->sourceEntity, $this->currentUser()))
@@ -472,7 +490,7 @@ class WebformSubmissionForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function afterBuild(array $form, FormStateInterface $form_state) {
-    // If webform has a custom #action remove Webform API fields.
+    // If webform has a custom #action remove Form API fields.
     // @see \Drupal\Core\Form\FormBuilder::prepareForm
     if (strpos($form['#action'], 'form_action_') === FALSE) {
       // Remove 'op' #name from all action buttons.
@@ -813,11 +831,6 @@ class WebformSubmissionForm extends ContentEntityForm {
     /** @var \Drupal\webform\WebformSubmissionInterface $webform_submission */
     $webform_submission = $this->getEntity();
 
-    // Set current page.
-    if ($current_page = $this->getCurrentPage($form, $form_state)) {
-      $webform_submission->setCurrentPage($current_page);
-    }
-
     // Make sure the uri and remote addr are set correctly because
     // AJAX requests via 'managed_file' uploads can cause these values to be
     // reset.
@@ -864,6 +877,10 @@ class WebformSubmissionForm extends ContentEntityForm {
         }
         unset($elements[$key]);
       }
+    }
+    // Replace token in #attributes.
+    if (isset($form['#attributes'])) {
+      $form['#attributes'] = $this->tokenManager->replace($form['#attributes'], $this->getEntity());
     }
   }
 

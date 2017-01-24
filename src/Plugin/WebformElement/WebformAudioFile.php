@@ -18,8 +18,8 @@ class WebformAudioFile extends WebformManagedFileBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormats() {
-    $formats = parent::getFormats();
+  public function getItemFormats() {
+    $formats = parent::getItemFormats();
     $formats['file'] = $this->t('HTML5 Audio player (MP3 only)');
     return $formats;
   }

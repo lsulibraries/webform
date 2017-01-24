@@ -18,6 +18,7 @@ abstract class TextBase extends WebformElementBase {
   public function getDefaultProperties() {
     return parent::getDefaultProperties() + [
       'size' => '',
+      'minlength' => '',
       'maxlength' => '',
       'placeholder' => '',
       'pattern' => '',
@@ -142,7 +143,7 @@ abstract class TextBase extends WebformElementBase {
   }
 
   /**
-   * Webform API callback. Validate (word/charcter) counter.
+   * Form API callback. Validate (word/charcter) counter.
    */
   public static function validateCounter(array &$element, FormStateInterface $form_state) {
     $name = $element['#name'];

@@ -42,8 +42,8 @@ abstract class WebformManagedFileBase extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function hasMultipleValues(array $element) {
-    return (!empty($element['#multiple'])) ? TRUE : FALSE;
+  public function supportsMultipleValues() {
+    return TRUE;
   }
 
   /**
@@ -124,7 +124,7 @@ abstract class WebformManagedFileBase extends WebformElementBase {
 
     // Use custom validation callback so that File entities can be converted
     // into file ids (akk fids).
-    $element['#element_validate'][] = [get_class($this), 'validate'];
+    $element['#element_validate'][] = [get_class($this), 'validateManagedFile'];
 
     // Add file upload help to the element.
     $element['help'] = [
@@ -161,94 +161,28 @@ abstract class WebformManagedFileBase extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function formatHtml(array &$element, $value, array $options = []) {
-    if (empty($value)) {
-      return '';
-    }
-
-    $format = $this->getFormat($element);
-
-    $fids = (is_array($value)) ? $value : [$value];
-    $files = File::loadMultiple($fids);
-
-    $items = [];
-    foreach ($files as $fid => $file) {
-      $items[$fid] = $this->formatHtmlItem($element, $value, $options, $file, $format);
-    }
-    if (empty($items)) {
-      return '';
-    }
-
+  public function format($type, array &$element, $value, array $options = []) {
     if ($this->hasMultipleValues($element)) {
-      return [
-        '#theme' => 'item_list',
-        '#items' => $items,
-      ];
+      $value = $this->getFiles($element, $value, $options);
     }
     else {
-      return reset($items);
+      $value = $this->getFile($element, $value, $options);
     }
+    return parent::format($type, $element, $value, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function formatText(array &$element, $value, array $options = []) {
-    if (empty($value)) {
-      return '';
-    }
-
-    if (empty($element['#format']) || $element['#format'] == 'link') {
-      $element['#format'] = 'url';
-    }
-
-    $format = $this->getFormat($element);
-
-    $fids = (is_array($value)) ? $value : [$value];
-    $files = File::loadMultiple($fids);
-
-    $items = [];
-    foreach ($files as $fid => $file) {
-      $items[$fid] = $this->formatTextItem($element, $value, $options, $file, $format);
-    }
-    if (empty($items)) {
-      return '';
-    }
-
-    // Add dash (aka bullet) before each item.
-    if ($this->hasMultipleValues($element)) {
-      foreach ($items as &$item) {
-        $item = '- ' . $item;
-      }
-    }
-
-    return implode("\n", $items);
-  }
-
-  /**
-   * Format element file as HTML.
-   *
-   * @param array $element
-   *   An element.
-   * @param array|mixed $value
-   *   A value.
-   * @param array $options
-   *   An array of options.
-   * @param \Drupal\file\FileInterface $file
-   *   A file
-   * @param string $format
-   *   A format
-   *
-   * @return array|string
-   *   The element's value as formatted HTML.
-   */
-  protected function formatHtmlItem(array &$element, $value, array $options, FileInterface $file, $format) {
+  protected function formatHtmlItem(array &$element, $value, array $options = []) {
+    $file = $this->getFile($element, $value, $options);
+    $format = $this->getItemFormat($element);
     switch ($format) {
       case 'id':
       case 'url':
       case 'value':
       case 'raw':
-        return $this->formatTextItem($element, $value, $options, $file, $format);
+        return $this->formatTextItem($element, $value, $options);
 
       case 'link':
         return [
@@ -272,23 +206,11 @@ abstract class WebformManagedFileBase extends WebformElementBase {
   }
 
   /**
-   * Format element file as plain text.
-   *
-   * @param array $element
-   *   An element.
-   * @param array|mixed $value
-   *   A value.
-   * @param array $options
-   *   An array of options.
-   * @param \Drupal\file\FileInterface $file
-   *   A file
-   * @param string $format
-   *   A format
-   *
-   * @return array|string
-   *   The element's value as plain text.
+   * {@inheritdoc}
    */
-  protected function formatTextItem(array &$element, $value, array $options, FileInterface $file, $format) {
+  protected function formatTextItem(array &$element, $value,  array $options = []) {
+    $file = $this->getFile($element, $value, $options);
+    $format = $this->getItemFormat($element);
     switch ($format) {
       case 'id':
         return $file->id();
@@ -305,15 +227,15 @@ abstract class WebformManagedFileBase extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultFormat() {
+  public function getItemDefaultFormat() {
     return 'file';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormats() {
-    return parent::getFormats() + [
+  public function getItemFormats() {
+    return parent::getItemFormats() + [
       'file' => $this->t('File'),
       'link' => $this->t('Link'),
       'id' => $this->t('File ID'),
@@ -321,6 +243,49 @@ abstract class WebformManagedFileBase extends WebformElementBase {
     ];
   }
 
+  /**
+   * Get file.
+   *
+   * @param array $element
+   *   An element.
+   * @param array|mixed $value
+   *   A value.
+   * @param array $options
+   *   An array of options.
+   *
+   * @return \Drupal\file\FileInterface
+   *   A file.
+   */
+  protected function getFile(array $element, $value, array $options) {
+    if (empty($value)) {
+      return NULL;
+    }
+    if ($value instanceof FileInterface) {
+      return $value;
+    }
+
+    return $this->entityTypeManager->getStorage('file')->load($value);
+  }
+
+  /**
+   * Get files.
+   *
+   * @param array $element
+   *   An element.
+   * @param array|mixed $value
+   *   A value.
+   * @param array $options
+   *   An array of options.
+   *
+   * @return array
+   *   An associative array containing files.
+   */
+  protected function getFiles(array $element, $value, array $options) {
+    if (empty($value)) {
+      return [];
+    }
+    return $this->entityTypeManager->getStorage('file')->loadMultiple($value);
+  }
   /**
    * {@inheritdoc}
    */
@@ -545,9 +510,9 @@ abstract class WebformManagedFileBase extends WebformElementBase {
   }
 
   /**
-   * Webform API callback. Consolidate the array of fids for this field into a single fids.
+   * Form API callback. Consolidate the array of fids for this field into a single fids.
    */
-  public static function validate(array &$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateManagedFile(array &$element, FormStateInterface $form_state, &$complete_form) {
     // Call the default managed_element validation handler, which checks
     // the file entity and #required.
     // @see \Drupal\file\Element\ManagedFile::getInfo

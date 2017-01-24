@@ -49,7 +49,6 @@ class WebformRating extends Range {
     parent::prepare($element, $webform_submission);
   }
 
-
   /**
    * {@inheritdoc}
    */
@@ -61,15 +60,15 @@ class WebformRating extends Range {
   /**
    * {@inheritdoc}
    */
-  public function formatHtml(array &$element, $value, array $options = []) {
-    $format = $this->getFormat($element);
+  public function formatHtmlItem(array &$element, $value, array $options = []) {
+    $format = $this->getItemFormat($element);
 
     switch ($format) {
       case 'star':
         // Always return the raw value when the rating widget is included in an
         // email.
         if (!empty($options['email'])) {
-          return parent::formatText($element, $value, $options);
+          return parent::formatTextItem($element, $value, $options);
         }
 
         $build = [
@@ -79,22 +78,22 @@ class WebformRating extends Range {
         return WebformRatingElement::buildRateIt($build);
 
       default:
-        return parent::formatHtml($element, $value, $options);
+        return parent::formatHtmlItem($element, $value, $options);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDefaultFormat() {
+  public function getItemDefaultFormat() {
     return 'star';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormats() {
-    return parent::getFormats() + [
+  public function getItemFormats() {
+    return parent::getItemFormats() + [
       'star' => $this->t('Star'),
     ];
   }

@@ -12,6 +12,7 @@ description: 'Test a multiple step ''wizard'' webform.'
 elements: |
   '#attributes':
     novalidate: novalidate
+    'data-current-page': '[webform-submission:current-page]'
   information:
     '#title': 'Your Information'
     '#type': wizard_page
@@ -65,9 +66,11 @@ settings:
   page_submit_path: ''
   page_confirm_path: ''
   form_submit_label: Apply
+  form_submit_once: false
   form_submit_attributes: {  }
   form_exception_message: ''
   form_closed_message: ''
+  form_previous_submissions: true
   form_confidential: false
   form_confidential_message: ''
   form_prepopulate: false

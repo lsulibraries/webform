@@ -34,6 +34,13 @@ class Select extends OptionsBase {
   /**
    * {@inheritdoc}
    */
+  public function supportsMultipleValues() {
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function prepare(array &$element, WebformSubmissionInterface $webform_submission) {
     parent::prepare($element, $webform_submission);
     if (empty($element['#multiple'])) {

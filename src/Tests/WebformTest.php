@@ -9,6 +9,25 @@ namespace Drupal\webform\Tests;
  */
 class WebformTest extends WebformTestBase {
 
+  use WebformTestCreationTrait;
+
+  /**
+   * Webform submission storage.
+   *
+   * @var \Drupal\webform\WebformSubmissionStorageInterface
+   */
+  protected $submissionStorage;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // Storage.
+    $this->submissionStorage = \Drupal::entityTypeManager()->getStorage('webform_submission');
+  }
+
   /**
    * Tests webform entity.
    */

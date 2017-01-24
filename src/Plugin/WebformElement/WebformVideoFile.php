@@ -18,8 +18,8 @@ class WebformVideoFile extends WebformManagedFileBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormats() {
-    $formats = parent::getFormats();
+  public function getItemFormats() {
+    $formats = parent::getItemFormats();
     $formats['file'] = $this->t('HTML5 Video player (MP4 only)');
     return $formats;
   }

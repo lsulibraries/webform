@@ -5,7 +5,6 @@ namespace Drupal\webform\Plugin\WebformElement;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\OptGroup;
-use Drupal\webform\Utility\WebformArrayHelper;
 use Drupal\webform\Utility\WebformOptionsHelper;
 use Drupal\webform\WebformElementBase;
 use Drupal\webform\WebformSubmissionInterface;
@@ -130,8 +129,14 @@ abstract class OptionsBase extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function hasMultipleValues(array $element) {
-    return (isset($element['#multiple'])) ? $element['#multiple'] : parent::hasMultipleValues($element);
+  public function isMultiline(array $element) {
+    $format = $this->getItemsFormat($element);
+    if (in_array($format, ['ol', 'ul'])) {
+      return TRUE;
+    }
+    else {
+      return parent::isMultiline($element);
+    }
   }
 
   /**
@@ -152,141 +157,20 @@ abstract class OptionsBase extends WebformElementBase {
   /**
    * {@inheritdoc}
    */
-  public function formatHtml(array &$element, $value, array $options = []) {
-    if ($value && is_array($value) && ($list_type = $this->getListType($element))) {
+  protected function formatTextItem(array &$element, $value, array $options = []) {
+    $format = $this->getItemFormat($element);
+    if ($format == 'value' && isset($element['#options'])) {
       $flattened_options = OptGroup::flattenOptions($element['#options']);
-      return [
-        '#theme' => 'item_list',
-        '#items' => WebformOptionsHelper::getOptionsText($value, $flattened_options),
-        '#list_type' => $list_type,
-      ];
+      $value = WebformOptionsHelper::getOptionText($value, $flattened_options);
     }
-    else {
-      return parent::formatHtml($element, $value, $options);
-    }
+    return parent::formatTextItem($element, $value, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function formatText(array &$element, $value, array $options = []) {
-    // Return empty value.
-    if ($value === '' || $value === NULL || (is_array($value) && empty($value))) {
-      return '';
-    }
-
-    $format = $this->getFormat($element);
-    $flattened_options = OptGroup::flattenOptions($element['#options']);
-
-    // If not multiple options array return the simple value.
-    if (!is_array($value)) {
-      return ($format == 'raw') ? $value : WebformOptionsHelper::getOptionText($value, $flattened_options);
-    }
-
-    $options_text = WebformOptionsHelper::getOptionsText($value, $flattened_options);
-    switch ($format) {
-      case 'ol';
-        $list = [];
-        $index = 1;
-        foreach ($options_text as $option_text) {
-          $list[] = ($index++) . '. ' . $option_text;
-        }
-        return implode("\n", $list);
-
-      case 'ul';
-        $list = [];
-        foreach ($options_text as $index => $option_text) {
-          $list[] = '- ' . $option_text;
-        }
-        return implode("\n", $list);
-
-      case 'and':
-        return WebformArrayHelper::toString($options_text, t('and'));
-
-      case 'comma';
-        return implode(', ', $options_text);
-
-      case 'semicolon';
-        return implode('; ', $options_text);
-
-      case 'raw';
-      case 'value';
-        return implode(', ', $value);
-
-      default:
-        return implode($format, $options_text);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isMultiline(array $element) {
-    if ($this->isList($element)) {
-      return TRUE;
-    }
-    else {
-      return parent::isMultiline($element);
-    }
-  }
-
-  /**
-   * Determine if options element is being displayed as list.
-   *
-   * @param array $element
-   *   An element.
-   *
-   * @return bool
-   *   TRUE if options element is being displayed as ul or ol list.
-   */
-  protected function isList(array $element) {
-    return ($this->getListType($element)) ? TRUE : FALSE;
-  }
-
-  /**
-   * Get the element's list type.
-   *
-   * @param array $element
-   *   An element.
-   *
-   * @return string
-   *   List type ul or ol or NULL is element is not formatted as a list.
-   */
-  protected function getListType(array $element) {
-    $format = $this->getFormat($element);
-    switch ($format) {
-      case 'ol':
-      case 'ordered':
-        return 'ol';
-
-      case 'ul':
-      case 'unordered':
-      case 'list':
-        return 'ul';
-
-      default:
-        return NULL;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultFormat() {
+  public function getItemsDefaultFormat() {
     return 'comma';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormats() {
-    return parent::getFormats() + [
-      'comma' => $this->t('Comma'),
-      'semicolon' => $this->t('Semicolon'),
-      'and' => $this->t('And'),
-      'ol' => $this->t('Ordered list'),
-      'ul' => $this->t('Unordered list'),
-    ];
   }
 
   /**
@@ -313,6 +197,7 @@ abstract class OptionsBase extends WebformElementBase {
    * {@inheritdoc}
    */
   public function buildExportOptionsForm(array &$form, FormStateInterface $form_state, array $export_options) {
+    parent::buildExportOptionsForm($form, $form_state, $export_options);
     if (isset($form['options'])) {
       return;
     }
@@ -368,9 +253,8 @@ abstract class OptionsBase extends WebformElementBase {
   public function buildExportRecord(array $element, $value, array $export_options) {
     $element_options = $element['#options'];
 
-    $record = [];
-
     if ($export_options['options_format'] == 'separate') {
+      $record = [];
       // Combine the values so that isset can be used instead of in_array().
       // http://stackoverflow.com/questions/13483219/what-is-faster-in-array-or-isset
       $deltas = FALSE;
@@ -387,31 +271,20 @@ abstract class OptionsBase extends WebformElementBase {
           $record[] = '';
         }
       }
+      return $record;
     }
     else {
-      // Handle multiple values with options.
-      if (is_array($value)) {
-        if ($export_options['options_item_format'] == 'label') {
-          $value = WebformOptionsHelper::getOptionsText($value, $element_options);
-        }
-        $record[] = implode(',', $value);
+      if ($export_options['options_item_format'] == 'key') {
+        $element['#format'] = 'raw';
       }
-      // Handle single values with options.
-      elseif ($export_options['options_item_format'] == 'label') {
-        $record[] = WebformOptionsHelper::getOptionText($value, $element_options);
-      }
-      else {
-        $record[] = $value;
-      }
+      return parent::buildExportRecord($element, $value, $export_options);
     }
-
-    return $record;
   }
 
   /**
-   * Webform API callback. Remove unchecked options from value array.
+   * Form API callback. Remove unchecked options from value array.
    */
-  public static function validateMultipleOptions(array &$element, FormStateInterface $form_state) {
+  public static function validateMultipleOptions(array &$element, FormStateInterface $form_state, array &$completed_form) {
     $name = $element['#name'];
     $values = $form_state->getValue($name);
     // Filter unchecked/unselected options whose value is 0.
@@ -612,6 +485,16 @@ abstract class OptionsBase extends WebformElementBase {
       '#size' => 4,
       '#states' => $states_number,
     ];
+
+    // Add hide/show #format_items based on #multiple.
+    if ($this->supportsMultipleValues() && $this->hasProperty('multiple')) {
+      $form['display']['format_items']['#states'] = [
+        'visible' => [
+          [':input[name="properties[multiple]"]' => ['checked' => TRUE]],
+        ],
+      ];
+    }
+
     return $form;
   }
 

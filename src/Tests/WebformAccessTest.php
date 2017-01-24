@@ -12,6 +12,8 @@ use Drupal\webform\Entity\Webform;
  */
 class WebformAccessTest extends WebformTestBase {
 
+  use WebformTestCreationTrait;
+
   /**
    * Tests webform access rules.
    */
@@ -201,6 +203,12 @@ class WebformAccessTest extends WebformTestBase {
     $this->drupalGet('webform/' . $webform->id());
     $this->assertRaw('You have already submitted this webform.');
     $this->assertRaw("<a href=\"{$base_path}webform/{$webform_id}/submissions\">View your previous submissions</a>");
+
+    // Check disabled previous submissions messages.
+    $webform->setSetting('form_previous_submissions', FALSE);
+    $webform->save();
+    $this->drupalGet('webform/' . $webform->id());
+    $this->assertNoRaw('You have already submitted this webform.');
 
     // Check the new submission's view, update, and delete access for the user.
     $test_own = [

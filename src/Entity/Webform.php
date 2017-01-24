@@ -11,13 +11,13 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
-use Drupal\webform\Plugin\WebformElement\Details;
 use Drupal\webform\Plugin\WebformElement\WebformManagedFileBase;
 use Drupal\webform\Utility\WebformElementHelper;
 use Drupal\webform\WebformHandlerInterface;
 use Drupal\webform\WebformHandlerPluginCollection;
 use Drupal\webform\WebformInterface;
 use Drupal\webform\WebformSubmissionInterface;
+use Drupal\webform\WebformSubmissionStorageInterface;
 
 /**
  * Defines the webform entity.
@@ -511,9 +511,11 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       'page_submit_path' => '',
       'page_confirm_path' => '',
       'form_submit_label' => '',
+      'form_submit_once' => FALSE,
       'form_submit_attributes' => [],
       'form_exception_message' => '',
       'form_closed_message' => '',
+      'form_previous_submissions' => TRUE,
       'form_confidential' => FALSE,
       'form_confidential_message' => '',
       'form_prepopulate' => FALSE,
@@ -556,6 +558,8 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       'limit_total_message' => '',
       'limit_user' => NULL,
       'limit_user_message' => '',
+      'purge' => WebformSubmissionStorageInterface::PURGE_NONE,
+      'purge_days' => NULL,
       'entity_limit_total' => NULL,
       'entity_limit_user' => NULL,
       'results_disabled' => FALSE,
