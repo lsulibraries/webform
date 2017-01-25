@@ -177,7 +177,7 @@ class WebformSubmission extends ContentEntityBase implements WebformSubmissionIn
 
     $fields['sticky'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Sticky'))
-      ->setDescription(t('A flag that indicate the status of the webform submission.'))
+      ->setDescription(t('A flag that indicates the status of the webform submission.'))
       ->setDefaultValue(FALSE);
 
     $fields['notes'] = BaseFieldDefinition::create('string_long')
