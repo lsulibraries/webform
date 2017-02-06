@@ -458,6 +458,12 @@ abstract class WebformManagedFileBase extends WebformElementBase {
     if (!empty($element['#file_extensions'])) {
       $file_extensions = $element['#file_extensions'];
     }
+
+    // Block XSS file extensions. This include *.html and *.htm.
+    if ($this->configFactory->get('webform.settings')->get('file.xss_block')) {
+      $file_extensions = trim(preg_replace('/\s*(html|htm)\s*/', ' ', $file_extensions));
+    }
+
     return $file_extensions;
   }
 
@@ -598,6 +604,10 @@ abstract class WebformManagedFileBase extends WebformElementBase {
       '#description' => $this->t('A list of additional file extensions for this upload field, separated by spaces.'),
       '#maxlength' => 255,
     ];
+    // Block XSS file extensions. This includes *.html and *.htm.
+    if ($this->configFactory->get('webform.settings')->get('file.xss_block')) {
+      $form['file']['file_extensions']['#description'] .= '<br/><em>' . $this->t('HTML files (*.html and *.htm) are not permitted because they can contain malicious code.') . '</em>';
+    }
     $form['file']['multiple'] = [
       '#title' => $this->t('Multiple'),
       '#type' => 'checkbox',

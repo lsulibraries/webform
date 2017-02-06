@@ -6,27 +6,14 @@ dependencies:
       - webform_test
 uid: null
 template: false
-id: test_element_attributes
-title: 'Test: Element: Attributes'
-description: 'Test options attributes.'
+id: test_element_managed_file_html
+title: 'Test: Element: Managed file with HTML'
+description: 'Test HTML file uploads using managed file element.'
 elements: |
-  webform_element_attributes:
-    '#type': webform_element_attributes
-    '#title': webform_element_attributes
-    '#classes': |
-      one
-      two
-      three
-    '#class__description': 'This is a custom class description.'
-    '#style__description': 'This is a custom style description.'
-    '#attributes__description': 'This is a custom attributes description.'
-    '#default_value':
-      class:
-        - one
-        - two
-        - four
-      style: 'color: red'
-      custom: test
+  managed_file_html:
+    '#type': managed_file
+    '#title': 'managed_file (HTML)'
+    '#file_extensions': 'htm'
 css: ''
 javascript: ''
 settings:
@@ -58,7 +45,7 @@ settings:
   wizard_start_label: ''
   wizard_complete: true
   wizard_complete_label: ''
-  preview: 0
+  preview: 1
   preview_next_button_label: ''
   preview_next_button_attributes: {  }
   preview_prev_button_label: ''
@@ -70,7 +57,7 @@ settings:
   draft_button_attributes: {  }
   draft_saved_message: ''
   draft_loaded_message: ''
-  confirmation_type: message
+  confirmation_type: page
   confirmation_message: ''
   confirmation_url: ''
   confirmation_attributes: {  }
@@ -83,8 +70,8 @@ settings:
   limit_user_message: ''
   entity_limit_total: null
   entity_limit_user: null
-  results_disabled: true
-  results_disabled_ignore: true
+  results_disabled: false
+  results_disabled_ignore: false
   token_update: false
 access:
   create:
@@ -113,11 +100,4 @@ access:
   delete_own:
     roles: {  }
     users: {  }
-handlers:
-  debug:
-    id: debug
-    label: Debug
-    handler_id: debug
-    status: true
-    weight: 0
-    settings: {  }
+handlers: {  }

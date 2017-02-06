@@ -22,6 +22,14 @@ webform.admin_settings.third_party:
   requirements:
     _permission: 'administer webform'
 
+webform.admin_settings.html_to_text:
+  path: '/admin/reports/status/webform/html-to-text'
+  defaults:
+    _form: '\Drupal\webform\Form\WebformAdminHtmlToTextForm'
+    _title: 'Webforms: Convert uploaded HTML files to plain text.'
+  requirements:
+    _permission: 'administer webform'
+
 webform.addons:
   path: '/admin/structure/webform/addons'
   defaults:

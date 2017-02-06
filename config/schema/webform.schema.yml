@@ -131,6 +131,9 @@ webform.settings:
         file_public:
           type: boolean
           label: 'Allow files to be uploaded to public file system.'
+        xss_block:
+          type: boolean
+          label: 'Block any files that may contain Cross-Site Scripting (XSS).'
         default_max_filesize:
           type: string
           label: 'Default maximum upload size'

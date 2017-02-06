@@ -9,6 +9,7 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Url;
 use Drupal\system\Entity\Action;
 use Drupal\webform\Entity\Webform;
 use Drupal\webform\Plugin\WebformElement\ManagedFile;
@@ -70,15 +71,40 @@ function webform_requirements($phase) {
   $scheme_options = ManagedFile::getVisibleStreamWrappers();
   if (isset($scheme_options['private'])) {
     $requirements['webform_file_private'] = [
-      'title' => t('Webform: Private files'),
+      'title' => t('Webform files: Private files'),
       'value' => t('Private file system is set.'),
     ];
   }
   else {
     $requirements['webform_file_private'] = [
-      'title' => t('Webform: Private files'),
+      'title' => t('Webform files: Private files'),
       'value' => t('Private file system is not set.'),
       'description' => t('This must be changed in <a href="https://www.drupal.org/documentation/modules/file">settings.php</a>. For more information see: <a href="https://www.drupal.org/psa-2016-003">DRUPAL-PSA-2016-003</a>'),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+
+  // Check XSS file upload block.
+  if (!\Drupal::config('webform.settings')->get('file.xss_block')) {
+    $requirements['webform_file_xss_block'] = [
+      'title' => t('Webform files: XSS block'),
+      'value' => t('<a href=":href">Blocking users from uploading HTML files</a>, which may contain Cross-Site Scripting (XSS) is not set.', [':href' => Url::fromRoute('webform.settings', [], ['#fragment' => 'edit-file'])->toString()]),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+
+  // Check existing XSS file.
+  $query = Drupal::entityQuery('file');
+  $query ->condition('uri', '%://webform/%', 'LIKE')
+    ->condition(
+      $query->orConditionGroup()
+        ->condition('filename', '%.htm', 'LIKE')
+        ->condition('filename', '%.html', 'LIKE')
+    );
+  if ($total = $query->count()->execute()) {
+    $requirements['webform_file_html'] = [
+      'title' => t('Webform files: HTML file uploads'),
+      'value' => t('HTML files that may contain Cross-Site Scripting (XSS) have been uploaded. You should convert @total existing file(s) from <a href=":href">HTML to plain text</a>.', ['@total' => $total, ':href' => Url::fromRoute('webform.admin_settings.html_to_text')->toString()]),
       'severity' => REQUIREMENT_WARNING,
     ];
   }
@@ -496,4 +522,11 @@ function _webform_update_8014(array &$element) {
     }
   }
 
+}
+
+/**
+ * Issue #2849949: Improve file validation.
+ */
+function webform_update_8015() {
+  _webform_update_admin_settings();
 }

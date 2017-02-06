@@ -460,6 +460,13 @@ class WebformAdminSettingsForm extends ConfigFormBase {
       '#return_value' => TRUE,
       '#default_value' => $config->get('file.file_public'),
     ];
+    $form['file']['xss_block'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Block any files that may contain Cross-Site Scripting (XSS).'),
+      '#description' => $this->t('HTML files (*.html and *.html) can contain <a href=":href">Cross-Site Scripting</a> (XSS), which can allow a malicious user to take over your website.', [':href' => 'https://en.wikipedia.org/wiki/Cross-site_scripting']),
+      '#return_value' => TRUE,
+      '#default_value' => $config->get('file.xss_block'),
+    ];
     $form['file']['default_max_filesize'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Default maximum upload size'),
