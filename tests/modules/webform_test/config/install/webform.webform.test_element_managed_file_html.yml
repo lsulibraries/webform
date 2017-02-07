@@ -13,7 +13,7 @@ elements: |
   managed_file_html:
     '#type': managed_file
     '#title': 'managed_file (HTML)'
-    '#file_extensions': 'htm'
+    '#file_extensions': 'html'
 css: ''
 javascript: ''
 settings:
