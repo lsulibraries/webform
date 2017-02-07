@@ -56,7 +56,7 @@ class WebformElementManagedFileHtmlTest extends WebformTestBase {
     // Check that HTML file upload is allowed.
     $this->assertTrue($this->getLastFileId());
 
-    // Get 'Status report'
+    // Get the 'Status report'.
     $this->drupalGet('admin/reports/status');
 
     // Check †hat 'Webform files: HTML file uploads' warning is displayed.
@@ -65,7 +65,7 @@ class WebformElementManagedFileHtmlTest extends WebformTestBase {
     // Check †hat 'Webform files: XSS block' warning is displayed.
     $this->assertText('Blocking users from uploading HTML files, which may contain Cross-Site Scripting (XSS) is not set.');
 
-    // Execute batch convert HTML files to text.
+    // Execute 'Convert HTML files to text' batch process.
     $this->clickLink('HTML to plain text');
     $this->drupalPostForm(NULL, [], t('Convert HTML files to text'));
 
