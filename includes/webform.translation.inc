@@ -155,10 +155,10 @@ function webform_lingotek_config_entity_document_upload(array &$source_data, Con
       $translation_elements = $translation_manager->getTranslationElements($entity, $entity->language()->getId());
       $source_data['elements'] = $translation_elements;
 
-      // Encode all [webform*] tokens as MD5 hashes.
+      // Encode all [tokens].
       $yaml = Yaml::encode($source_data);
       $yaml = preg_replace_callback(
-        '/\[(webform[^]]+)\]/', function ($matches) {return '[' . md5($matches[1]) . ']';},
+        '/\[([a-z][^]]+)\]/', function ($matches) {return '[***' . base64_encode($matches[1]) . '***]';},
         $yaml
       );
       $source_data = Yaml::decode($yaml);
@@ -177,20 +177,12 @@ function webform_lingotek_config_entity_document_upload(array &$source_data, Con
 function webform_lingotek_config_entity_translation_presave(ConfigEntityInterface &$translation, $langcode, &$data) {
   switch ($translation->getEntityTypeId()) {
     case 'webform';
-      /** @var \Drupal\webform\WebformTranslationManagerInterface $translation_manager */
-      $translation_manager = \Drupal::service('webform.translation_manager');
-
-      // Create tokens lookup table with MD5 token names.
-      $base_config = $translation_manager->getBaseConfig($translation);
-      $tokens = [];
-      preg_replace_callback(
-        '/\[(webform[^]]+)\]/', function ($matches) use (&$tokens){$tokens['[' . md5($matches[1]) . ']'] = $matches[0];},
-        Yaml::encode($base_config)
-      );
-
-      // Decode all [webform*] tokens from MD5 hashes to original token values.
+      // Decode all [tokens].
       $yaml = Yaml::encode($data);
-      $yaml = str_replace(array_keys($tokens), $tokens, $yaml);
+      $yaml = preg_replace_callback(
+        '/\[\*\*\*([^]]+)\*\*\*\]/', function ($matches) {return '[' . base64_decode($matches[1]) . ']';},
+        $yaml
+      );
       $data = Yaml::decode($yaml);
 
       /** @var \Drupal\webform\WebformInterface $translation */

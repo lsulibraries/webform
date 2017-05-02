@@ -89,21 +89,6 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getBaseConfig(WebformInterface $webform) {
-    $langcode = $this->getOriginalLangcode($webform) ?: $this->languageManager->getDefaultLanguage()->getId();
-
-    $config_override_language = $this->languageManager->getConfigOverrideLanguage();
-    $config_name = 'webform.webform.' . $webform->id();
-
-    $this->languageManager->setConfigOverrideLanguage($this->languageManager->getLanguage($langcode));
-    $config = $this->configFactory->get($config_name)->getRawData();
-    $this->languageManager->setConfigOverrideLanguage($config_override_language);
-    return $config;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getBaseElements(WebformInterface $webform) {
     $default_langcode = $this->getOriginalLangcode($webform) ?: $this->languageManager->getDefaultLanguage()->getId();
     $config_elements = $this->getElements($webform, $default_langcode);

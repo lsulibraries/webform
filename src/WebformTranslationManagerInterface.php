@@ -24,17 +24,6 @@ interface WebformTranslationManagerInterface {
   public function getElements(WebformInterface $webform, $langcode = NULL, $reset = FALSE);
 
   /**
-   * Get base (raw) config data for the site's default language.
-   *
-   * @param \Drupal\webform\WebformInterface $webform
-   *   A webform.
-   *
-   * @return array
-   *   Base webform (raw) config data.
-   */
-  public function getBaseConfig(WebformInterface $webform);
-
-  /**
    * Get base webform elements for the site's default language.
    *
    * @param \Drupal\webform\WebformInterface $webform
