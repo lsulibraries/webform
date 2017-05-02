@@ -54,7 +54,7 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfigElements(WebformInterface $webform, $langcode = NULL, $reset = FALSE) {
+  public function getConfig(WebformInterface $webform, $langcode = NULL, $reset = FALSE) {
     // Note: Below code return the default languages elements for missing
     // translations.
     $config_override_language = $this->languageManager->getConfigOverrideLanguage();
@@ -71,9 +71,17 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
     }
 
     $this->languageManager->setConfigOverrideLanguage($this->languageManager->getLanguage($langcode));
-    $elements = $this->configFactory->get($config_name)->get('elements');
+    $config = $this->configFactory->get($config_name)->getRawData();
     $this->languageManager->setConfigOverrideLanguage($config_override_language);
+    return $config;
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getElements(WebformInterface $webform, $langcode = NULL, $reset = FALSE) {
+    $config =  $this->getConfig($webform, $langcode, $reset);
+    $elements = $config['elements'];
     if (!$elements) {
       return [];
     }
@@ -89,9 +97,17 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function getBaseConfig(WebformInterface $webform) {
+    $default_langcode = $this->getOriginalLangcode($webform) ?: $this->languageManager->getDefaultLanguage()->getId();
+    return $this->getConfig($webform, $default_langcode);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getBaseElements(WebformInterface $webform) {
     $default_langcode = $this->getOriginalLangcode($webform) ?: $this->languageManager->getDefaultLanguage()->getId();
-    $config_elements = $this->getConfigElements($webform, $default_langcode);
+    $config_elements = $this->getElements($webform, $default_langcode);
     $elements = WebformElementHelper::getFlattened($config_elements);
     $translatable_properties = WebformArrayHelper::addPrefix($this->elementManager->getTranslatableProperties());
     foreach ($elements as $element_key => &$element) {
@@ -123,8 +139,7 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
    * {@inheritdoc}
    */
   public function getSourceElements(WebformInterface $webform) {
-    $elements = $this->getBaseElements($webform);
-    return $elements;
+    return $this->getBaseElements($webform);
   }
 
   /**
@@ -132,7 +147,7 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
    */
   public function getTranslationElements(WebformInterface $webform, $langcode) {
     $elements = $this->getSourceElements($webform);
-    $translation_elements = $this->getConfigElements($webform, $langcode);
+    $translation_elements = $this->getElements($webform, $langcode);
     if ($elements == $translation_elements) {
       return $elements;
     }

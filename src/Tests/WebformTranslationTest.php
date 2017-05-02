@@ -73,7 +73,7 @@ class WebformTranslationTest extends WebformTestBase {
 
     // Check that French config elements returns the default languages elements.
     // Please note: This behavior might change.
-    $translation_element = $translation_manager->getConfigElements($webform, 'fr', TRUE);
+    $translation_element = $translation_manager->getElements($webform, 'fr', TRUE);
     $this->assertEqual($elements, $translation_element);
 
     // Create French translation.
@@ -97,7 +97,7 @@ class WebformTranslationTest extends WebformTestBase {
 
     // Check French config elements only contains translated properties and
     // custom properties are removed.
-    $translation_element = $translation_manager->getConfigElements($webform, 'fr', TRUE);
+    $translation_element = $translation_manager->getElements($webform, 'fr', TRUE);
     $this->assertEqual(['textfield' => ['#title' => 'French']], $translation_element);
 
     /**************************************************************************/
