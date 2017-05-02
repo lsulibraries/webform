@@ -54,7 +54,7 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfig(WebformInterface $webform, $langcode = NULL, $reset = FALSE) {
+  public function getElements(WebformInterface $webform, $langcode = NULL, $reset = FALSE) {
     // Note: Below code return the default languages elements for missing
     // translations.
     $config_override_language = $this->languageManager->getConfigOverrideLanguage();
@@ -71,17 +71,9 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
     }
 
     $this->languageManager->setConfigOverrideLanguage($this->languageManager->getLanguage($langcode));
-    $config = $this->configFactory->get($config_name)->getRawData();
+    $elements = $this->configFactory->get($config_name)->get('elements');
     $this->languageManager->setConfigOverrideLanguage($config_override_language);
-    return $config;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getElements(WebformInterface $webform, $langcode = NULL, $reset = FALSE) {
-    $config =  $this->getConfig($webform, $langcode, $reset);
-    $elements = $config['elements'];
     if (!$elements) {
       return [];
     }
@@ -98,8 +90,15 @@ class WebformTranslationManager implements WebformTranslationManagerInterface {
    * {@inheritdoc}
    */
   public function getBaseConfig(WebformInterface $webform) {
-    $default_langcode = $this->getOriginalLangcode($webform) ?: $this->languageManager->getDefaultLanguage()->getId();
-    return $this->getConfig($webform, $default_langcode);
+    $langcode = $this->getOriginalLangcode($webform) ?: $this->languageManager->getDefaultLanguage()->getId();
+
+    $config_override_language = $this->languageManager->getConfigOverrideLanguage();
+    $config_name = 'webform.webform.' . $webform->id();
+
+    $this->languageManager->setConfigOverrideLanguage($this->languageManager->getLanguage($langcode));
+    $config = $this->configFactory->get($config_name)->getRawData();
+    $this->languageManager->setConfigOverrideLanguage($config_override_language);
+    return $config;
   }
 
   /**

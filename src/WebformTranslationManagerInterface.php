@@ -8,22 +8,6 @@ namespace Drupal\webform;
 interface WebformTranslationManagerInterface {
 
   /**
-   * Get webform (raw) config data for specific language.
-   *
-   * @param \Drupal\webform\WebformInterface $webform
-   *   A webform.
-   * @param string $langcode
-   *   The language code for the webform elements.
-   * @param bool $reset
-   *   (optional) Whether to reset the translated config cache. Defaults to
-   *   FALSE.
-   *
-   * @return array
-   *   A webform's (raw) config data .
-   */
-  public function getConfig(WebformInterface $webform, $langcode = NULL, $reset = FALSE);
-
-  /**
    * Get webform elements for specific language.
    *
    * @param \Drupal\webform\WebformInterface $webform
