@@ -305,6 +305,18 @@ class WebformAdminSettingsForm extends ConfigFormBase {
       '#size' => 20,
       '#default_value' => $settings['default_preview_prev_button_label'],
     ];
+    $form['preview']['default_preview_label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Default preview label'),
+      '#required' => TRUE,
+      '#default_value' => $settings['default_preview_label'],
+    ];
+    $form['preview']['default_preview_title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Default preview page title'),
+      '#required' => TRUE,
+      '#default_value' => $settings['default_preview_title'],
+    ];
     $form['preview']['default_preview_message'] = [
       '#type' => 'webform_html_editor',
       '#title' => $this->t('Default preview message'),
@@ -797,6 +809,13 @@ class WebformAdminSettingsForm extends ConfigFormBase {
       '#return_value' => TRUE,
       '#default_value' => $config->get('ui.dialog_disabled'),
     ];
+    $form['ui']['help_menu_disabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Disable help menu'),
+      '#description' => $this->t("If checked, 'How can we help you?' menu will be disabled."),
+      '#return_value' => TRUE,
+      '#default_value' => $config->get('ui.help_menu_disabled'),
+    ];
     $form['ui']['offcanvas_disabled'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Disable off-canvas system tray'),
@@ -909,6 +928,9 @@ class WebformAdminSettingsForm extends ConfigFormBase {
         ],
       ],
     ];
+
+    $form['token_tree_link'] = $this->tokenManager->buildTreeLink();
+
     return parent::buildForm($form, $form_state);
   }
 

@@ -6,11 +6,19 @@ webform.settings:
   requirements:
     _permission: 'administer webform'
 
-webform.help:
-  path: '/admin/help/webform/{id}'
+webform.help.video:
+  path: '/admin/help/webform/video/{id}'
   defaults:
-    _controller: '\Drupal\webform\Controller\WebformHelpController::index'
-    _title_callback: '\Drupal\webform\Controller\WebformHelpController::title'
+    _controller: '\Drupal\webform\Controller\WebformHelpController::video'
+    _title_callback: '\Drupal\webform\Controller\WebformHelpController::videoTitle'
+  requirements:
+    _permission: 'access administration pages'
+
+webform.help.about:
+  path: '/admin/help/webform/about'
+  defaults:
+    _controller: '\Drupal\webform\Controller\WebformHelpController::about'
+    _title: 'How can we help you?'
   requirements:
     _permission: 'access administration pages'
 
@@ -310,6 +318,14 @@ entity.webform_options.edit_form:
     _title_callback: '\Drupal\webform\Controller\WebformOptionsController::title'
   requirements:
     _entity_access: 'webform_options.update'
+
+entity.webform_options.duplicate_form:
+  path: '/admin/structure/webform/settings/options/{webform_options}/duplicate'
+  defaults:
+    _entity_form: 'webform_options.duplicate'
+    _title: 'Duplicate webform options'
+  requirements:
+    _entity_access: 'webform_options.duplicate'
 
 entity.webform_options.delete_form:
   path: '/admin/structure/webform/settings/options/{webform_options}/delete'

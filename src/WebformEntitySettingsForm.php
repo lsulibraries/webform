@@ -322,7 +322,7 @@ class WebformEntitySettingsForm extends EntityForm {
       ],
       'form_prepopulate_source_entity' => [
         'title' => $this->t('Allow source entity to be populated using query string parameters.'),
-        'form_description' => $this->t("If checked, source entity can be populated using query string parameters. For example, appending ?source_entity_type=user&source_entity_id=1 to a webform's URL would set a submission's 'Submitted to' value to '@user'.", ['@user' => User::load(1)->label()]),
+        'form_description' => $this->t("If checked, source entity can be populated using query string parameters. For example, appending ?source_entity_type=user&source_entity_id=".\Drupal::currentUser()->id()." to a webform's URL would set a submission's 'Submitted to' value to '@user'.", ['@user' => User::load(\Drupal::currentUser()->id())->label()]),
       ],
       // Global behaviors.
       // @see \Drupal\webform\Form\WebformAdminSettingsForm
@@ -521,6 +521,18 @@ class WebformEntitySettingsForm extends EntityForm {
       '#title' => $this->t('Previous page button'),
       '#classes' => $this->configFactory->get('webform.settings')->get('settings.button_classes'),
       '#default_value' => $settings['preview_prev_button_attributes'],
+    ];
+    $form['preview']['settings']['preview_label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Preview label'),
+      '#description' => $this->t('A text displayed within a wizard progress bar.'),
+      '#default_value' => $settings['preview_label'],
+    ];
+    $form['preview']['settings']['preview_title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Preview page title'),
+      '#description' => $this->t('A title displayed on the preview page.'),
+      '#default_value' => $settings['preview_title'],
     ];
     $form['preview']['settings']['preview_message'] = [
       '#type' => 'webform_html_editor',

@@ -8,16 +8,114 @@ open: null
 close: null
 uid: null
 template: false
-id: test_element_validate_minlength
-title: 'Test: Element: Validate Minlength'
-description: 'Test #minlength element validation support.'
-category: 'Test: Element'
+id: test_form_api
+title: 'Test: Form API'
+description: 'Test Form API validation'
+category: 'Test: Webform'
 elements: |
-  minlength_textfield:
+  textfield_multiple:
     '#type': textfield
-    '#title': minlength_textfield
-    '#minlength': 5
-    '#default_value': value
+    '#title': 'Text field multiple'
+    '#multiple': true
+    '#required': true
+  email:
+    '#type': email
+    '#title': Email
+    '#required': true
+  webform_email_confirm:
+    '#type': webform_email_confirm
+    '#title': 'Email confirm'
+    '#required': true
+  checkboxes:
+    '#type': checkboxes
+    '#title': Checkboxes
+    '#required': true
+    '#options':
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+  webform_checkboxes_other:
+    '#type': webform_checkboxes_other
+    '#title': 'Checkboxes other'
+    '#required': true
+    '#options':
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+  select:
+    '#type': select
+    '#title': Select
+    '#required': true
+    '#options':
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+  select_multiple:
+    '#type': select
+    '#title': 'Select multiple'
+    '#required': true
+    '#options':
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    '#multiple': true
+    '#select2': true
+  webform_select_other:
+    '#type': webform_select_other
+    '#title': 'Select other'
+    '#required': true
+    '#options':
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+  webform_select_other_multiple:
+    '#type': webform_select_other
+    '#title': 'Select other multiple'
+    '#required': true
+    '#options':
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+    '#multiple': true
+  date:
+    '#type': date
+    '#title': Date
+    '#required': true
+  datelist:
+    '#type': datelist
+    '#title': 'Date list'
+    '#required': true
+  entity_autocomplete:
+    '#type': entity_autocomplete
+    '#title': 'Entity autocomplete'
+    '#required': true
+    '#target_type': user
+    '#selection_handler': 'default:user'
+    '#selection_settings':
+      include_anonymous: true
+  webform_entity_checkboxes:
+    '#type': webform_entity_checkboxes
+    '#title': 'Entity checkboxes'
+    '#required': true
+    '#target_type': user
+    '#selection_handler': 'default:user'
+    '#selection_settings':
+      include_anonymous: true
+    '#options':
+      1: Administrator
+      0: Anonymous
 css: ''
 javascript: ''
 settings:
