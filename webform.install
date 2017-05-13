@@ -528,6 +528,9 @@ function webform_update_8045() {
     $collections[] = "language.$langcode";
   }
   foreach (['config', 'config_snapshot'] as $table_name) {
+    if (!\Drupal::database()->schema()->tableExists($table_name)) {
+      continue;
+    }
     $query = \Drupal::database()->select($table_name, 'c')
       ->fields('c', ['name', 'collection', 'data'])
       ->orderBy('name')
