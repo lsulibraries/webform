@@ -548,7 +548,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   /**
    * {@inheritdoc}
    */
-  public function isWizard() {
+  public function hasWizardPages() {
     return $this->getNumberOfWizardPages() ? TRUE : FALSE;
   }
 
@@ -557,7 +557,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
    */
   public function getNumberOfWizardPages() {
     $this->initElements();
-    return count($this->numberOfWizardPages);
+    return count($this->elementsWizardPages);
   }
 
   /**

@@ -687,7 +687,7 @@ class WebformSubmissionForm extends ContentEntityForm {
             '#value' => $this->config('webform.settings')->get('settings.default_preview_prev_button_label'),
             '#validate' => ['::noValidate'],
             '#submit' => ['::previous'],
-            '#attributes' => ['class' => ['js-webform-novalidate', 'webform-button--previous']],
+            '#attributes' => ['class' => ['webform-button--previous', 'js-webform-novalidate']],
             '#weight' => 0,
           ];
         }
@@ -706,7 +706,7 @@ class WebformSubmissionForm extends ContentEntityForm {
             '#webform_actions_button_custom' => $previous_button_custom,
             '#validate' => ['::validateForm'],
             '#submit' => ['::previous'],
-            '#attributes' => ['class' => ['webform-button--previous']],
+            '#attributes' => ['class' => ['webform-button--previous', 'js-webform-novalidate']],
             '#weight' => 0,
           ];
         }
@@ -735,7 +735,7 @@ class WebformSubmissionForm extends ContentEntityForm {
           $element['wizard_next'] = [
             '#type' => 'submit',
             '#value' => $next_button_label,
-            '#webform_button_custom' => $next_button_custom,
+            '#webform_actions_button_custom' => $next_button_custom,
             '#validate' => ['::validateForm'],
             '#submit' => ['::next'],
             '#attributes' => ['class' => ['webform-button--next']],

@@ -89,7 +89,7 @@ class WebformActions extends ContainerBase {
       '#title' => $this->t('Buttons'),
     ];
     $draft_enabled = ($webform->getSetting('draft') != WebformInterface::DRAFT_ENABLED_NONE);
-    $wizard_enabled = $webform->isWizard();
+    $wizard_enabled = $webform->hasWizardPages();
     $preview_enabled = ($webform->getSetting('preview') != DRUPAL_DISABLED);
 
     $buttons = [

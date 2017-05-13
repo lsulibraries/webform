@@ -105,12 +105,12 @@ interface WebformInterface extends ConfigEntityInterface, EntityWithPluginCollec
   public function getNumberOfActions();
 
   /**
-   * Determine if the webform is a multistep form wizard.
+   * Determine if the webform has multistep form wizard pages.
    *
    * @return bool
-   *   TRUE if the webform is a multistep form wizard.
+   *   TRUE if the webform has multistep form wizard pages.
    */
-  public function isWizard();
+  public function hasWizardPages();
 
   /**
    * Get the number of wizard pages.

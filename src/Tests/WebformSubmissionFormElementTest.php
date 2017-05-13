@@ -105,23 +105,23 @@ class WebformSubmissionFormElementTest extends WebformTestBase {
     $this->drupalGet('webform/test_form_buttons');
 
     // Check draft button.
-    $this->assertRaw('<input class="draft_button_attributes webform-button--draft button js-form-submit form-submit" style="color: blue" data-drupal-selector="edit-draft" type="submit" id="edit-draft" name="op" value="Save Draft" />');
+    $this->assertRaw('<input class="webform-button--draft draft_button_attributes button js-form-submit form-submit" style="color: blue" data-drupal-selector="edit-draft" type="submit" id="edit-draft" name="op" value="Save Draft" />');
     // Check next button.
-    $this->assertRaw('<input class="wizard_next_button_attributes webform-button--next button js-form-submit form-submit" style="color: yellow" data-drupal-selector="edit-next" type="submit" id="edit-next" name="op" value="Next Page &gt;" />');
+    $this->assertRaw('<input class="webform-button--next wizard_next_button_attributes button js-form-submit form-submit" style="color: yellow" data-drupal-selector="edit-wizard-next" type="submit" id="edit-wizard-next" name="op" value="Next Page &gt;" />');
 
     $this->drupalPostForm('webform/test_form_buttons', [], t('Next Page >'));
 
     // Check previous button.
-    $this->assertRaw('<input class="wizard_prev_button_attributes js-webform-novalidate webform-button--previous button js-form-submit form-submit" style="color: yellow" data-drupal-selector="edit-previous" type="submit" id="edit-previous" name="op" value="&lt; Previous Page" />');
+    $this->assertRaw('<input class="webform-button--previous js-webform-novalidate wizard_prev_button_attributes button js-form-submit form-submit" style="color: yellow" data-drupal-selector="edit-wizard-prev" type="submit" id="edit-wizard-prev" name="op" value="&lt; Previous Page" />');
     // Check preview button.
-    $this->assertRaw('<input class="preview_next_button_attributes webform-button--preview button js-form-submit form-submit" style="color: orange" data-drupal-selector="edit-next" type="submit" id="edit-next" name="op" value="Preview" />');
+    $this->assertRaw('<input class="webform-button--preview preview_next_button_attributes button js-form-submit form-submit" style="color: orange" data-drupal-selector="edit-preview-next" type="submit" id="edit-preview-next" name="op" value="Preview" />');
 
     $this->drupalPostForm(NULL, [], t('Preview'));
 
     // Check previous button.
-    $this->assertRaw('<input class="preview_prev_button_attributes js-webform-novalidate webform-button--previous button js-form-submit form-submit" style="color: orange" data-drupal-selector="edit-previous" type="submit" id="edit-previous" name="op" value="&lt; Previous" />');
+    $this->assertRaw('<input class="webform-button--previous js-webform-novalidate preview_prev_button_attributes button js-form-submit form-submit" style="color: orange" data-drupal-selector="edit-preview-prev" type="submit" id="edit-preview-prev" name="op" value="&lt; Previous" />');
     // Check submit button.
-    $this->assertRaw('<input class="form_submit_attributes webform-button--submit button button--primary js-form-submit form-submit" style="color: green" data-drupal-selector="edit-submit" type="submit" id="edit-submit" name="op" value="Submit" />');
+    $this->assertRaw('<input class="webform-button--submit form_submit_attributes button button--primary js-form-submit form-submit" style="color: green" data-drupal-selector="edit-submit" type="submit" id="edit-submit" name="op" value="Submit" />');
   }
 
 }
