@@ -23,7 +23,7 @@ elements: |
   page_2:
     '#title': 'Page 2'
     '#type': webform_wizard_page
-    element_1:
+    element_2:
       '#title': 'Element 2'
       '#type': textfield
       '#default_value': '{element_2}'

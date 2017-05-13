@@ -12,7 +12,9 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
+use Drupal\webform\Plugin\WebformElement\WebformActions;
 use Drupal\webform\Plugin\WebformElement\WebformManagedFileBase;
+use Drupal\webform\Plugin\WebformElement\WebformWizardPage;
 use Drupal\webform\Utility\WebformElementHelper;
 use Drupal\webform\WebformHandlerInterface;
 use Drupal\webform\WebformHandlerPluginCollection;
@@ -295,6 +297,20 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   protected $hasContainer = FALSE;
 
   /**
+   * Track if the webform has custom actions (aka submit buttons).
+   *
+   * @var bool
+   */
+  protected $hasActions = FALSE;
+
+  /**
+   * Track if the webform is a multistep form wizard.
+   *
+   * @var bool
+   */
+  protected $isWizard = FALSE;
+
+  /**
    * Track if the webform has translations.
    *
    * @var bool
@@ -517,6 +533,22 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   /**
    * {@inheritdoc}
    */
+  public function hasActions() {
+    $this->initElements();
+    return $this->hasActions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isWizard() {
+    $this->initElements();
+    return $this->isWizard;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getDescription() {
     return $this->description;
   }
@@ -642,9 +674,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       'page' => TRUE,
       'page_submit_path' => '',
       'page_confirm_path' => '',
-      'form_submit_label' => '',
       'form_submit_once' => FALSE,
-      'form_submit_attributes' => [],
       'form_exception_message' => '',
       'form_open_message' => '',
       'form_close_message' => '',
@@ -664,25 +694,15 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       'wizard_progress_bar' => TRUE,
       'wizard_progress_pages' => FALSE,
       'wizard_progress_percentage' => FALSE,
-      'wizard_next_button_label' => '',
-      'wizard_next_button_attributes' => [],
-      'wizard_prev_button_label' => '',
-      'wizard_prev_button_attributes' => [],
       'wizard_start_label' => '',
       'wizard_complete' => TRUE,
       'wizard_complete_label' => '',
       'preview' => DRUPAL_DISABLED,
-      'preview_next_button_label' => '',
-      'preview_next_button_attributes' => [],
-      'preview_prev_button_label' => '',
-      'preview_prev_button_attributes' => [],
       'preview_label' => '',
       'preview_title' => '',
       'preview_message' => '',
       'draft' => self::DRAFT_ENABLED_NONE,
       'draft_auto_save' => FALSE,
-      'draft_button_label' => '',
-      'draft_button_attributes' => [],
       'draft_saved_message' => '',
       'draft_loaded_message' => '',
       'confirmation_type' => 'page',
@@ -949,6 +969,8 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     $this->hasManagedFile = FALSE;
     $this->hasFlexboxLayout = FALSE;
     $this->hasContainer = FALSE;
+    $this->hasActions = FALSE;
+    $this->isWizard = FALSE;
     $this->elementsDecodedAndFlattened = [];
     $this->elementsInitializedAndFlattened = [];
     $this->elementsInitializedFlattenedAndHasValue = [];
@@ -1001,6 +1023,8 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     $this->hasManagedFile = NULL;
     $this->hasFlexboxLayout = NULL;
     $this->hasContainer = NULL;
+    $this->hasActions = NULL;
+    $this->isWizard = NULL;
     $this->elementsDecoded = NULL;
     $this->elementsInitialized = NULL;
     $this->elementsDecodedAndFlattened = NULL;
@@ -1093,6 +1117,16 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
         // Track container.
         if ($element_handler->isContainer($element)) {
           $this->hasContainer = TRUE;
+        }
+
+        // Track actions.
+        if ($element_handler instanceof WebformActions) {
+          $this->hasActions = TRUE;
+        }
+
+        // Track wizard.
+        if ($element_handler instanceof WebformWizardPage) {
+          $this->isWizard = TRUE;
         }
 
         $element['#webform_multiple'] = $element_handler->hasMultipleValues($element);
