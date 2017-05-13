@@ -137,7 +137,9 @@ class WebformActions extends ContainerBase {
       ];
 
       $form[$name . '_settings'] = [
-        '#type' => 'fieldset',
+        '#type' => 'details',
+        '#open' => TRUE,
+        '#weight' => -10,
         '#title' => $this->t('@title button', $t_args),
         '#access' => $button['access'],
       ];
