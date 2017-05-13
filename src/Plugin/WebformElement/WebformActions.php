@@ -24,7 +24,7 @@ class WebformActions extends ContainerBase {
   public function getDefaultProperties() {
     $properties = [
       // Title.
-      'title' => [],
+      'title' => '',
       // Attributes.
       'attributes' => [],
       // Conditional logic.
@@ -154,6 +154,7 @@ class WebformActions extends ContainerBase {
         '#type' => 'checkbox',
         '#title' => $this->t('Hide @label button', $t_args),
         '#return_value' => TRUE,
+        '#access' => $webform->getNumberOfActions() > 1 ? TRUE : FALSE,
       ];
       $form[$name . '_settings'][$name . '__label'] = [
         '#type' => 'textfield',
@@ -171,5 +172,22 @@ class WebformActions extends ContainerBase {
     }
     return $form;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    /** @var \Drupal\webform\WebformInterface $webform */
+    $webform = $form_state->getFormObject()->getWebform();
+
+    if (!$webform->hasActions()) {
+      $form['element']['title']['#default_value'] = $this->t('Actions');
+      $this->key = 'acccc';
+    }
+    return $form;
+  }
+
 
 }

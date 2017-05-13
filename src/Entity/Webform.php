@@ -269,6 +269,20 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   protected $elementsTranslations;
 
   /**
+   * Track the elements that are 'webform_actions' (aka submit buttons).
+   *
+   * @var array
+   */
+  protected $elementsActions = [];
+
+  /**
+   * Track the elements that are 'webform_pages' (aka Wizard pages).
+   *
+   * @var array
+   */
+  protected $elementsWizardPages = [];
+
+  /**
    * The webform pages.
    *
    * @var array
@@ -295,20 +309,6 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
    * @var bool
    */
   protected $hasContainer = FALSE;
-
-  /**
-   * Track if the webform has custom actions (aka submit buttons).
-   *
-   * @var bool
-   */
-  protected $hasActions = FALSE;
-
-  /**
-   * Track if the webform is a multistep form wizard.
-   *
-   * @var bool
-   */
-  protected $isWizard = FALSE;
 
   /**
    * Track if the webform has translations.
@@ -534,16 +534,30 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
    * {@inheritdoc}
    */
   public function hasActions() {
+    return $this->getNumberOfActions() ? TRUE : FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNumberOfActions() {
     $this->initElements();
-    return $this->hasActions;
+    return count($this->elementsActions);
   }
 
   /**
    * {@inheritdoc}
    */
   public function isWizard() {
+    return $this->getNumberOfWizardPages() ? TRUE : FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNumberOfWizardPages() {
     $this->initElements();
-    return $this->isWizard;
+    return count($this->numberOfWizardPages);
   }
 
   /**
@@ -969,8 +983,8 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     $this->hasManagedFile = FALSE;
     $this->hasFlexboxLayout = FALSE;
     $this->hasContainer = FALSE;
-    $this->hasActions = FALSE;
-    $this->isWizard = FALSE;
+    $this->elementsActions = [];
+    $this->numberOfWizardPages = [];
     $this->elementsDecodedAndFlattened = [];
     $this->elementsInitializedAndFlattened = [];
     $this->elementsInitializedFlattenedAndHasValue = [];
@@ -1023,8 +1037,8 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     $this->hasManagedFile = NULL;
     $this->hasFlexboxLayout = NULL;
     $this->hasContainer = NULL;
-    $this->hasActions = NULL;
-    $this->isWizard = NULL;
+    $this->elementsActions = [];
+    $this->numberOfWizardPages = [];
     $this->elementsDecoded = NULL;
     $this->elementsInitialized = NULL;
     $this->elementsDecodedAndFlattened = NULL;
@@ -1121,12 +1135,12 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
 
         // Track actions.
         if ($element_handler instanceof WebformActions) {
-          $this->hasActions = TRUE;
+          $this->elementsActions[$key] = $key;
         }
 
         // Track wizard.
         if ($element_handler instanceof WebformWizardPage) {
-          $this->isWizard = TRUE;
+          $this->elementsWizardPages[$key] = $key;
         }
 
         $element['#webform_multiple'] = $element_handler->hasMultipleValues($element);
@@ -1177,7 +1191,21 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     $elements = $this->getElementsDecoded();
     // If element is was not added to elements, add it as the last element.
     if (!$this->setElementPropertiesRecursive($elements, $key, $properties, $parent_key)) {
-      $elements[$key] = $properties;
+      if ($this->hasActions()) {
+        // Add element before the last 'webform_actions' element.
+        $last_action_key = end($this->elementsActions);
+        $updated_elements = [];
+        foreach ($elements as $element_key => $element) {
+          if ($element_key == $last_action_key) {
+            $updated_elements[$key] = $properties;
+          }
+          $updated_elements[$element_key] = $element;
+        }
+        $elements = $updated_elements;
+      }
+      else {
+        $elements[$key] = $properties;
+      }
     }
     $this->setElements($elements);
     return $this;

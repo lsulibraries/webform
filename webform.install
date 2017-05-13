@@ -515,7 +515,7 @@ function webform_update_8045() {
   foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
     $webform_config = $config_factory->getEditable($webform_config_name);
     $data = $webform_config->getRawData();
-    _webform_update_8045_convert_data($data);
+    $data = _webform_update_8045_convert_data($data);
     $webform_config->setData($data)->save();
   }
 
@@ -572,10 +572,10 @@ function _webform_update_8045_convert_data(array $data) {
   foreach ($button_names as $button_name) {
     $settings_prefix = ($button_name == 'submit') ? 'form_' . $button_name : $button_name .'_button';
     if (!empty($settings[$settings_prefix .'_label'])) {
-      $actions_element[$button_name . '__label'] = $settings[$settings_prefix .'_label'];
+      $actions_element['#' . $button_name . '__label'] = $settings[$settings_prefix .'_label'];
     }
     if (!empty($settings[$settings_prefix .'_attributes'])) {
-      $actions_element[$button_name . '__attributes'] = $settings[$settings_prefix .'_attributes'];
+      $actions_element['#' . $button_name . '__attributes'] = $settings[$settings_prefix .'_attributes'];
     }
     unset($settings[$settings_prefix .'_label']);
     unset($settings[$settings_prefix .'_attributes']);
@@ -587,6 +587,7 @@ function _webform_update_8045_convert_data(array $data) {
     $elements = Yaml::decode($data['elements']);
     $elements['actions'] = [
         '#type' => 'webform_actions',
+        '#title' => $this->t('Actions'),
       ] + $actions_element;
     $data['elements'] = Yaml::encode($elements);
   }
