@@ -135,9 +135,6 @@ class WebformActions extends ContainerBase {
         '@title' => $button['title'],
         '@label' => $button['label'],
       ];
-      $states = [
-        'visible' => [':input[name="properties[' . $name . '_hide]"]' => ['checked' => FALSE]],
-      ];
 
       $form[$name . '_settings'] = [
         '#type' => 'fieldset',
@@ -154,20 +151,34 @@ class WebformActions extends ContainerBase {
         '#type' => 'checkbox',
         '#title' => $this->t('Hide @label button', $t_args),
         '#return_value' => TRUE,
-        '#access' => $webform->getNumberOfActions() > 1 ? TRUE : FALSE,
       ];
+      if (strpos($name, '_prev') === FALSE) {
+        $form[$name . '_settings'][$name . '_hide_message'] = [
+          '#type' => 'webform_message',
+          '#access' => TRUE,
+          '#message_message' => $this->t('Hiding the  @label button can cause unexpected issues, please make sure to include the @label button using another element.', $t_args),
+          '#message_type' => 'warning',
+          '#states' => [
+            'visible' => [':input[name="properties[' . $name . '_hide]"]' => ['checked' => TRUE]],
+          ],
+        ];
+      }
       $form[$name . '_settings'][$name . '__label'] = [
         '#type' => 'textfield',
         '#title' => $this->t('@title button label', $t_args),
         '#description' => $this->t('Defaults to: %value', ['%value' => $this->configFactory->get('webform.settings')->get('settings.default_' . $name . '_button_label')]),
         '#size' => 20,
-        '#states' => $states,
+        '#states' => [
+          'visible' => [':input[name="properties[' . $name . '_hide]"]' => ['checked' => FALSE]],
+        ],
       ];
       $form[$name . '_settings'][$name . '__attributes'] = [
         '#type' => 'webform_element_attributes',
         '#title' => $this->t('@title button', $t_args),
         '#classes' => $this->configFactory->get('webform.settings')->get('settings.button_classes'),
-        '#states' => $states,
+        '#states' => [
+          'visible' => [':input[name="properties[' . $name . '_hide]"]' => ['checked' => FALSE]],
+        ],
       ];
     }
     return $form;
@@ -183,7 +194,7 @@ class WebformActions extends ContainerBase {
     $webform = $form_state->getFormObject()->getWebform();
 
     if (!$webform->hasActions()) {
-      $form['element']['title']['#default_value'] = $this->t('Actions');
+      $form['element']['title']['#default_value'] = $this->t('Submit button(s)');
       $this->key = 'acccc';
     }
     return $form;

@@ -106,7 +106,7 @@ class WebformUiEntityForm extends WebformEntityForm {
       ];
       $form['custom_actions']['add_actions'] = [
         '#type' => 'link',
-        '#title' => $this->t('Edit submit button(s)'),
+        '#title' => $this->t('Customize submit button(s)'),
         '#url' => new Url('entity.webform_ui.element.add_form', ['webform' => $webform->id(), 'type' => 'webform_actions'], ['query' => ['key' => 'actions']]),
         '#attributes' => WebformDialogHelper::getModalDialogAttributes(800, ['button']),
       ];

@@ -587,7 +587,7 @@ function _webform_update_8045_convert_data(array $data) {
     $elements = Yaml::decode($data['elements']);
     $elements['actions'] = [
         '#type' => 'webform_actions',
-        '#title' => $this->t('Actions'),
+        '#title' => $this->t('Submit button(s)'),
       ] + $actions_element;
     $data['elements'] = Yaml::encode($elements);
   }
