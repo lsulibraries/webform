@@ -32,7 +32,7 @@ class WebformActions extends ContainerBase {
     ];
     foreach (WebformActionsElement::$buttons as $button) {
       $properties[$button . '_hide'] = FALSE;
-      $properties[$button . '__label'] = '';
+      $properties[$button . '__label'] = $this->configFactory->get('webform.settings')->get('settings.default_' . $button . '_button_label');
       $properties[$button . '__attributes'] = [];
     }
     return $properties;
@@ -108,7 +108,6 @@ class WebformActions extends ContainerBase {
         'label' => $this->t('wizard previous'),
         'description' => $this->t('This is used for the previous page button within a wizard.'),
         'access' => $wizard_enabled,
-
       ],
       'wizard_next' => [
         'title' => $this->t('Wizard next'),
@@ -171,8 +170,14 @@ class WebformActions extends ContainerBase {
         '#title' => $this->t('@title button label', $t_args),
         '#description' => $this->t('Defaults to: %value', ['%value' => $this->configFactory->get('webform.settings')->get('settings.default_' . $name . '_button_label')]),
         '#size' => 20,
+        '#attributes' => [
+          // Make sure default value is never cleared by #states API.
+          // @see js/webform.states.js
+          'data-webform-states-no-clear' => TRUE,
+        ],
         '#states' => [
           'visible' => [':input[name="properties[' . $name . '_hide]"]' => ['checked' => FALSE]],
+          'required' => [':input[name="properties[' . $name . '_hide]"]' => ['checked' => FALSE]],
         ],
       ];
       $form[$name . '_settings'][$name . '__attributes'] = [
