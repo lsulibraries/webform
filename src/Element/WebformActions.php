@@ -2,6 +2,7 @@
 
 namespace Drupal\webform\Element;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Container;
 
@@ -52,6 +53,9 @@ class WebformActions extends Container {
    *   The processed element.
    */
   public static function processWebformActions(&$element, FormStateInterface $form_state, &$complete_form) {
+    $prefix = ($element['#webform_key']) ? 'edit-' . $element['#webform_key'] . '-' : '';
+
+    // Add class names.
     $element['#attributes']['class'][] = 'form-actions';
     $element['#attributes']['class'][] = 'webform-actions';
 
@@ -60,36 +64,41 @@ class WebformActions extends Container {
 
     // Track if buttons are visible.
     $has_visible_button = FALSE;
-    foreach (static::$buttons as $button) {
+    foreach (static::$buttons as $button_name) {
       // Make sure the button exists.
-      if (!isset($element[$button])) {
+      if (!isset($element[$button_name])) {
         continue;
       }
 
+      // Set unique id for each button.
+      if ($prefix) {
+        $element[$button_name]['#id'] = Html::getUniqueId("$prefix$button_name");
+      }
+
       // Hide buttons using #access.
-      if (!empty($element['#' . $button .'_hide'])) {
-        $element[$button]['#access'] = FALSE;
+      if (!empty($element['#' . $button_name .'_hide'])) {
+        $element[$button_name]['#access'] = FALSE;
       }
 
       // Apply custom label.
-      if (!empty($element['#' . $button .'__label']) && empty($element[$button]['#webform_actions_button_custom'])) {
-        $element[$button]['#value'] = $element['#' . $button .'__label'];
+      if (!empty($element['#' . $button_name .'__label']) && empty($element[$button_name]['#webform_actions_button_custom'])) {
+        $element[$button_name]['#value'] = $element['#' . $button_name .'__label'];
       }
 
       // Apply attributes (class, style, properties).
-      if (!empty($element['#' . $button .'__attributes'])) {
-        foreach ($element['#' . $button .'__attributes'] as $name => $value) {
-          if ($name == 'class') {
+      if (!empty($element['#' . $button_name .'__attributes'])) {
+        foreach ($element['#' . $button_name .'__attributes'] as $attribute_name => $attribute_value) {
+          if ($attribute_name == 'class') {
             // Merge class names.
-            $element[$button]['#attributes']['class'] = array_merge($element[$button]['#attributes']['class'], $value);
+            $element[$button_name]['#attributes']['class'] = array_merge($element[$button_name]['#attributes']['class'], $attribute_value);
           }
           else {
-            $element[$button]['#attributes'][$name] = $value;
+            $element[$button_name]['#attributes'][$attribute_name] = $attribute_value;
           }
         };
       }
 
-      if (!isset($element[$button]['#access']) || $element[$button]['#access'] === TRUE) {
+      if (!isset($element[$button_name]['#access']) || $element[$button_name]['#access'] === TRUE) {
         $has_visible_button = TRUE;
       }
     }

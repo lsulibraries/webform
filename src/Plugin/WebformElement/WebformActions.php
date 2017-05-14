@@ -134,6 +134,7 @@ class WebformActions extends ContainerBase {
       $t_args = [
         '@title' => $button['title'],
         '@label' => $button['label'],
+        '%label' => $button['label'],
       ];
 
       $form[$name . '_settings'] = [
@@ -158,7 +159,7 @@ class WebformActions extends ContainerBase {
         $form[$name . '_settings'][$name . '_hide_message'] = [
           '#type' => 'webform_message',
           '#access' => TRUE,
-          '#message_message' => $this->t('Hiding the  @label button can cause unexpected issues, please make sure to include the @label button using another element.', $t_args),
+          '#message_message' => $this->t('Hiding the %label button can cause unexpected issues, please make sure to include the %label button using another element.', $t_args),
           '#message_type' => 'warning',
           '#states' => [
             'visible' => [':input[name="properties[' . $name . '_hide]"]' => ['checked' => TRUE]],

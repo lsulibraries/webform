@@ -8,9 +8,9 @@ open: null
 close: null
 uid: null
 template: false
-id: test_form_buttons
-title: 'Test: Webform: Buttons'
-description: 'Test custom webform buttons.'
+id: test_element_actions_buttons
+title: 'Test: Element: Actions buttons'
+description: 'Test element actions buttons.'
 category: 'Test: Webform'
 elements: |
   wizard_page_1:
