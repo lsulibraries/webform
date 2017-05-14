@@ -230,9 +230,9 @@ class WebformWizardTest extends WebformTestBase {
     // Check webform next and previous button labels.
     $this->drupalPostForm('webform/test_form_wizard_advanced', [], t('{webform wizard next}'));
     // Check previous button.
-    $this->assertFieldById('edit-wizard-prev', '{webform wizard previous}');
+    $this->assertFieldById('edit-actions-wizard-prev', '{webform wizard previous}');
     // Check next button.
-    $this->assertFieldById('edit-wizard-next', '{webform wizard next}');
+    $this->assertFieldById('edit-actions-wizard-next', '{webform wizard next}');
 
     // Check custom next and previous button labels.
     $elements = Yaml::decode($webform->get('elements'));
@@ -243,9 +243,9 @@ class WebformWizardTest extends WebformTestBase {
     $this->drupalPostForm('webform/test_form_wizard_advanced', [], t('{webform wizard next}'));
 
     // Check previous button.
-    $this->assertFieldById('edit-wizard-prev', '{elements wizard previous}');
+    $this->assertFieldById('edit-actions-wizard-prev', '{elements wizard previous}');
     // Check next button.
-    $this->assertFieldById('edit-wizard-next', '{elements wizard next}');
+    $this->assertFieldById('edit-actions-wizard-next', '{elements wizard next}');
 
     // Check webform next and previous button labels.
     $webform->setSettings([
