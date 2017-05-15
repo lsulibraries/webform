@@ -12,6 +12,7 @@ use Drupal\system\Entity\Action;
 use Drupal\webform\Entity\Webform;
 use Drupal\webform\Plugin\WebformElement\ManagedFile;
 use Drupal\webform\Utility\WebformOptionsHelper;
+use Drupal\webform\Utility\WebformReflectionHelper;
 use Drupal\webform\WebformInterface;
 
 include_once 'includes/webform.update.inc';
@@ -496,9 +497,60 @@ function webform_update_8044() {
 }
 
 /**
- * Issue #2878193: Allow actions (aka submit buttons) to be placed anywhere on a webform.
+ * Issue #2878307: webform example module disable causes a customised webform deleted.
  */
 function webform_update_8045() {
+  // Remove sub module dependencies copied to new forms.
+  $webform_modules = WebformReflectionHelper::getSubModules();
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    // Don't remove dependencies for submodule config files.
+    if (_webform_update_8045_is_submodule_config($webform_config_name)) {
+      continue;
+    }
+
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $data = $webform_config->getRawData();
+
+    // Remove enforce module dependency when a sub-module's webform is
+    // duplicated.
+    if (isset($data['dependencies']['enforced']['module'])) {
+      $data['dependencies']['enforced']['module'] = array_diff($data['dependencies']['enforced']['module'], $webform_modules);
+      if (empty($data['dependencies']['enforced']['module'])) {
+        unset($data['dependencies']['enforced']['module']);
+        if (empty($data['dependencies']['enforced'])) {
+          unset($data['dependencies']['enforced']);
+        }
+      }
+      $webform_config->setData($data);
+      $webform_config->save();
+    }
+  }
+}
+
+/**
+ * Check if config is from a Webform submodule.
+ *
+ * @param string $webform_config_name
+ *   Webform config file name.
+ *
+ * @return bool
+ *   TRUE if config is from a Webform submodule.
+ */
+function _webform_update_8045_is_submodule_config($webform_config_name) {
+  $modules = WebformReflectionHelper::getSubModules();
+  foreach ($modules as $module) {
+    if (file_exists(drupal_get_path('module', $module) . "/config/install/$webform_config_name.yml")) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Issue #2878193: Allow actions (aka submit buttons) to be placed anywhere on a webform.
+ */
+function webform_update_8046() {
   // Change 'default_submit_button_label' to 'default_form_submit_label'.
   $config = \Drupal::configFactory()->getEditable('webform.settings');
   $data = $config->getRawData();
@@ -515,7 +567,7 @@ function webform_update_8045() {
   foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
     $webform_config = $config_factory->getEditable($webform_config_name);
     $data = $webform_config->getRawData();
-    $data = _webform_update_8045_convert_data($data);
+    $data = _webform_update_8046_convert_data($data);
     $webform_config->setData($data)->save();
   }
 
@@ -540,7 +592,7 @@ function webform_update_8045() {
     $result = $query->execute();
     while ($record = $result->fetchAssoc()) {
       $data = unserialize($record['data']);
-      $data = _webform_update_8045_convert_data($data);
+      $data = _webform_update_8046_convert_data($data);
       \Drupal::database()->update($table_name)
         ->fields(['data' => serialize($data)])
         ->condition('collection', $record['collection'])
@@ -559,7 +611,7 @@ function webform_update_8045() {
  * @return array
  *   Webform config data with 'webfor_actions' element.
  */
-function _webform_update_8045_convert_data(array $data) {
+function _webform_update_8046_convert_data(array $data) {
   $button_names = [
     'submit',
     'draft',

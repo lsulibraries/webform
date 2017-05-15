@@ -16,6 +16,7 @@ use Drupal\webform\Plugin\WebformElement\WebformActions;
 use Drupal\webform\Plugin\WebformElement\WebformManagedFileBase;
 use Drupal\webform\Plugin\WebformElement\WebformWizardPage;
 use Drupal\webform\Utility\WebformElementHelper;
+use Drupal\webform\Utility\WebformReflectionHelper;
 use Drupal\webform\WebformHandlerInterface;
 use Drupal\webform\WebformHandlerPluginCollection;
 use Drupal\webform\WebformInterface;
@@ -1383,13 +1384,18 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     /** @var \Drupal\webform\WebformInterface $duplicate */
     $duplicate = parent::createDuplicate();
 
-    // If template, clear the  description, remove template flag,
-    // and remove webform_templates.module dependency.
+    // If template, clear the  description and remove the template flag.
     if ($duplicate->isTemplate()) {
       $duplicate->set('description', '');
       $duplicate->set('template', FALSE);
+    }
 
-      if (isset($duplicate->dependencies['enforced']['module']) && $duplicate->dependencies['enforced']['module'] == ['webform_templates']) {
+    // Remove enforce module dependency when a sub-module's webform is
+    // duplicated.
+    if (isset($duplicate->dependencies['enforced']['module'])) {
+      $modules = WebformReflectionHelper::getSubModules();
+      $duplicate->dependencies['enforced']['module'] = array_diff($duplicate->dependencies['enforced']['module'], $modules);
+      if (empty($duplicate->dependencies['enforced']['module'])) {
         unset($duplicate->dependencies['enforced']['module']);
         if (empty($duplicate->dependencies['enforced'])) {
           unset($duplicate->dependencies['enforced']);
