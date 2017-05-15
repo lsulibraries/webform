@@ -1,0 +1,11 @@
+/**
+ * @file
+ * Dropbutton styles
+ */
+
+/**
+ * Hide dropbutton to prevent FOUC (flash of unstyled content).
+ */
+.dropbutton-wrapper {
+  visibility: hidden;
+}
