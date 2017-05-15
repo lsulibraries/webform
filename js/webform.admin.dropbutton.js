@@ -8,7 +8,7 @@
   'use strict';
 
   /**
-   * Wrap Drupal's dropbutton behavior so that widget is only visible after it is initialized.
+   * Wrap Drupal's dropbutton behavior so that the dropbutton widget is only visible after it is initialized.
    */
   var dropButton = Drupal.behaviors.dropButton;
   Drupal.behaviors.dropButton = {
